@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cookie's Restaurant & Coffee Shop</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23932635'/><text x='50' y='68' font-size='60' text-anchor='middle' fill='%23ffffff' font-family='serif'>C</text></svg>">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" href="#" data-page="home">
+        <div class="brand-text">
+          <span class="brand-name">Cookie's</span>
+          <span class="brand-sub">Restaurant & Coffee Shop</span>
+        </div>
+      </a>
+      <nav id="navMenu">
+        <a data-page="home" class="active">Home</a>
+        <a data-page="menu">Menu</a>
+        <a data-page="about">About Us</a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <i></i><i></i><i></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- HOME PAGE -->
+    <section id="home" class="page active">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="hero-eyebrow">Welcome to Cookie's</div>
+          <h1>
+            Good food.<br>
+            <span class="brand-title">Cookie's</span> <span class="accent-script">Vibes.</span>
+          </h1>
+          <p>Handcrafted breakfast, sizzling steaks, artisan pasta, and specialty coffee brewed with love in Laoag City.</p>
+          <div class="hero-actions">
+            <button class="btn-yellow" data-page="menu">
+              <span>Explore Menu</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENU PAGE -->
+    <section id="menu" class="page">
+      <div class="container">
+        <div class="section-head">
+          <span class="section-tag">Cooked Fresh Daily</span>
+          <h2>Explore Our Menu</h2>
+          <p>Tap any category to discover our signature breakfast, hearty mains, artisan pastas, and crafted drinks.</p>
+        </div>
+        <!-- Strictly 2 categories per row -->
+        <div id="categories" class="category-grid"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT PAGE -->
+    <section id="about" class="page">
+      <div class="container about-wrap">
+        <div class="section-head">
+          <span class="section-tag">Our Passion</span>
+          <h2>About <span class="cookies-font">Cookie's</span></h2>
+        </div>
+        <div class="about-card">
+          <p>Welcome to <strong>Cookie's Restaurant and Coffee Shop</strong>. We take pride in serving heartwarming meals and specialty coffee crafted with premium ingredients and passion.</p>
+          <p>From early morning breakfast platters and homemade pastas to sizzling steaks and comforting desserts, our kitchen is dedicated to giving you and your loved ones an unforgettable dining experience.</p>
+          <a class="btn-outline" target="_blank" rel="noopener" href="https://www.facebook.com/profile.php?id=61584839080407">
+            Visit Our Facebook Page →
+          </a>
+          <div class="contact-info">
+            <div class="contact-item">
+              <b>Location</b>
+              <p>Off the Bypass Road, 30-B Santa Maria, Laoag City, Ilocos Norte 2900</p>
+            </div>
+            <div class="contact-item">
+              <b>Contact Number</b>
+              <p>0949 805 3265</p>
+            </div>
+            <div class="contact-item">
+              <b>Email</b>
+              <p>cookieslaoag@gmail.com</p>
+            </div>
+            <div class="contact-item">
+              <b>Hours</b>
+              <p>Open Daily · Dine-In, Takeout & Delivery</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DYNAMIC CATEGORY DETAILS CONTAINER -->
+    <div id="details"></div>
+  </main>
+
+  <!-- ALWAYS-ON TOP-LEFT BACK TO MENUS BUTTON -->
+  <button id="floatingBackBtn" class="floating-back-btn" aria-label="Back to Menus" title="Back to Menus">
+    <span class="back-arrow">←</span>
+    <span>Back to Menus</span>
+  </button>
+
+  <!-- SCROLL TO TOP BUTTON (RIGHT BOTTOM) -->
+  <button id="scrollTopBtn" class="scroll-top-btn" aria-label="Scroll to top" title="Scroll to top">
+    ↑
+  </button>
+
+  <!-- FLOATING CART BUTTON -->
+  <button id="cartFab" class="cart-fab" aria-label="Open cart">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+    <span id="cartCount" class="cart-badge">0</span>
+  </button>
+
+  <!-- CART DRAWER -->
+  <aside id="cartDrawer" class="drawer">
+    <div class="drawer-head">
+      <h2>Your Cart</h2>
+      <button id="closeCart" aria-label="Close cart">×</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="cart-total-row">
+        <span>Subtotal</span>
+        <b id="cartTotal">₱0.00</b>
+      </div>
+      <button id="checkoutBtn" class="btn-yellow" style="width:100%; justify-content:center;">
+        Proceed to Checkout →
+      </button>
+    </div>
+  </aside>
+  <div id="overlay" class="overlay"></div>
+
+  <!-- CHECKOUT MODAL -->
+  <div id="checkoutModal" class="modal">
+    <div class="modal-card">
+      <button class="modal-close" id="closeCheckout">×</button>
+      <span class="section-tag" style="margin-bottom:8px">Order Confirmation</span>
+      <h2 style="margin-bottom:6px">Place Your Order</h2>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px">Your order will be instantly received by Cookie's kitchen staff.</p>
+
+      <form id="checkoutForm">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input name="customer_name" placeholder="e.g. Maria Santos" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number (if applicable)</label>
+          <input name="phone" placeholder="e.g. 0917 123 4567">
+        </div>
+        <div class="form-group">
+          <label>Order Type *</label>
+          <select name="order_type">
+            <option value="Dine-in">Dine-in</option>
+            <option value="Takeout">Takeout</option>
+            <option value="Delivery">Delivery</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Delivery Address (if applicable)</label>
+          <input name="address" placeholder="Barangay, Street, Landmark">
+        </div>
+        <div class="form-group">
+          <label>Special Requests / Instructions</label>
+          <textarea name="notes" placeholder="e.g. Egg over easy, less sugar on iced latte..."></textarea>
+        </div>
+
+        <div style="background:#0e0e13; border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:20px;">
+          <b style="font-size:13px; color:var(--text-muted); display:block; margin-bottom:8px;">Order Summary</b>
+          <div id="checkoutSummary" style="font-size:13px; line-height:1.6; color:#ffffff;"></div>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+          Confirm & Send Order
+        </button>
+        <p id="orderMsg" style="text-align:center; font-size:13px; margin-top:12px; min-height:20px; color:var(--text-muted);"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast"></div>
+
+  <!-- FOOTER WITH DISCREET STAFF ACCESS -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div>
+          <b class="brand-name" style="font-size:24px;">Cookie's</b>
+          <p style="font-size:11px; color:var(--text-muted); margin:0;">Restaurant & Coffee Shop · Laoag City</p>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="#" data-page="home">Home</a>
+        <a href="#" data-page="menu">Menu</a>
+        <a href="#" data-page="about">About</a>
+        <a target="_blank" rel="noopener" href="https://www.facebook.com/profile.php?id=61584839080407">Facebook</a>
+        <!-- Discreet staff portal access hidden from main nav -->
+        <a href="/admin.html" class="staff-discreet-link" title="Staff login">Staff Portal</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "cookies-restaurant-ordering-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cookie's Restaurant and Coffee Shop menu, cart, ordering and admin system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^11.10.0",
+    "compression": "^1.8.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2"
+  }
+}

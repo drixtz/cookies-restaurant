@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cookie's · Manager Portal</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>">
+</head>
+<body class="admin-body">
+
+  <!-- STAFF LOGIN MODAL (HIDDEN ONCE AUTHENTICATED) -->
+  <div id="loginModal" class="modal show">
+    <div class="modal-card" style="max-width:440px; text-align:center;">
+      <div class="brand-icon" style="margin:0 auto 16px; width:52px; height:52px; font-size:26px;">🍪</div>
+      <span class="manager-badge" style="margin-bottom:12px; display:inline-block;">Staff Access</span>
+      <h2 style="margin-bottom:6px;">Cookie's Manager Portal</h2>
+      <p style="color:var(--text-muted); font-size:13px; margin-bottom:24px;">Please enter manager credentials to proceed.</p>
+
+      <form id="loginForm" style="text-align:left;">
+        <div class="form-group">
+          <label>Staff Username</label>
+          <input name="username" value="admin" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input name="password" type="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:8px;">
+          Login to Dashboard →
+        </button>
+        <p id="loginMsg" style="color:#ef4444; font-size:13px; text-align:center; margin-top:14px; min-height:20px;"></p>
+        <div style="text-align:center; margin-top:16px;">
+          <a href="/" style="font-size:12px; color:var(--text-muted);">← Back to Customer Website</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MANAGER HEADER -->
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="admin-brand">
+        
+        <div>
+          <b class="brand-name">Cookie's</b>
+          <span class="manager-badge">Manager Portal</span>
+        </div>
+      </div>
+      <div class="admin-actions">
+        <a href="/" target="_blank" class="btn-outline" style="padding:8px 18px; font-size:13px;">
+          🌐 View Website
+        </a>
+        <button id="logoutBtn" class="btn-icon danger" style="padding:8px 16px; font-size:13px;">
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- MANAGER SEPARATED NAVIGATION MENU -->
+    <div class="admin-nav-bar">
+      <div class="admin-nav-inner">
+        <button class="admin-tab-btn active" data-tab="orders">
+          <span>📋 Live Orders</span>
+          <span id="ordersBadge" class="tab-badge" style="display:none;">0</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="menu">
+          <span>🍽️ Menu & Dishes</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="add-item">
+          <span>➕ Add New Dish</span>
+        </button>
+        <button class="admin-tab-btn" data-tab="categories">
+          <span>🗂️ Categories</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN MANAGER VIEWS -->
+  <main class="admin-container">
+
+    <!-- TAB 1: LIVE ORDERS -->
+    <section id="tab-orders" class="admin-view active">
+      <div class="orders-toolbar">
+        <div>
+          <h2 style="font-size:24px; margin-bottom:4px;">Incoming Orders</h2>
+          <p style="color:var(--text-muted); font-size:13px;">Orders auto-refresh every 10 seconds</p>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button id="soundToggle" class="btn-icon" style="padding:8px 14px;">
+            🔔 Sound: <span id="soundStatus">ON</span>
+          </button>
+          <div class="status-filters">
+            <button class="status-filter-btn active" data-filter="ALL">All</button>
+            <button class="status-filter-btn" data-filter="NEW">New</button>
+            <button class="status-filter-btn" data-filter="CONFIRMED">Confirmed</button>
+            <button class="status-filter-btn" data-filter="PREPARING">Preparing</button>
+            <button class="status-filter-btn" data-filter="READY">Ready</button>
+            <button class="status-filter-btn" data-filter="COMPLETED">Completed</button>
+          </div>
+        </div>
+      </div>
+      <div id="ordersGrid" class="orders-grid">
+        <p style="color:var(--text-muted); padding:40px; text-align:center; grid-column:1/-1;">Loading orders…</p>
+      </div>
+    </section>
+
+    <!-- TAB 2: MENU & DISHES MANAGER (SEPARATED BY CATEGORIES) -->
+    <section id="tab-menu" class="admin-view">
+      <!-- Category Sub-Menu / Pills -->
+      <div class="category-submenu-wrap">
+        <div class="category-submenu-title">Select Category to Manage:</div>
+        <div id="categoryPills" class="category-pills"></div>
+      </div>
+
+      <!-- Active Category Header & Add Item Shortcut -->
+      <div class="category-manager-header">
+        <div>
+          <span class="section-tag" id="mgrCatTag">Category</span>
+          <h2 id="mgrCatName">Breakfast</h2>
+          <p id="mgrCatNote" style="color:#ffb8c0; font-size:13px;"></p>
+          <p id="mgrCatCount" style="color:var(--text-muted); font-size:13px; margin-top:4px;">0 dishes listed</p>
+        </div>
+        <div>
+          <button id="mgrAddDishBtn" class="btn-primary">
+            <span>➕ Add Dish to <span id="mgrAddDishCatName">Category</span></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dishes in Selected Category -->
+      <div id="mgrItemsGrid" class="admin-items-grid"></div>
+    </section>
+
+    <!-- TAB 3: DEDICATED ADD NEW DISH FORM ("WHERE AND WHEN WE ADD ITEM") -->
+    <section id="tab-add-item" class="admin-view">
+      <div class="add-item-card">
+        <span class="section-tag">Menu Manager</span>
+        <h2>Add New Dish</h2>
+        <p>Add a new menu item to any category. Changes will instantly reflect on the customer ordering page.</p>
+
+        <form id="createItemForm">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Category *</label>
+              <select name="category_id" id="addCategorySelect" required></select>
+            </div>
+            <div class="form-group">
+              <label>Dish Name *</label>
+              <input name="name" placeholder="e.g. Classic Bacon & Pancakes" required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Price (PHP) *</label>
+              <input name="price" placeholder="e.g. 240 or P240" required>
+            </div>
+            <div class="form-group">
+              <label>Price Caption / Portion (Optional)</label>
+              <input name="price_caption" placeholder="e.g. Serves 1-2, 8oz portion, with egg...">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dish Description</label>
+            <textarea name="description" placeholder="Describe the ingredients, flavors, and how it is served..."></textarea>
+          </div>
+
+          <!-- Photo Upload & URL -->
+          <div class="form-group">
+            <label>Dish Photo</label>
+            <div class="image-upload-box" onclick="$('#addFileInput').click()">
+              <input type="file" id="addFileInput" accept="image/*" style="display:none;" onchange="handleImagePreview(event, '#addPreview', '#addImageUrl')">
+              <div style="font-size:28px; margin-bottom:6px;">📸</div>
+              <p style="font-weight:600; font-size:14px; margin-bottom:4px; color:#ffffff;">Click to Upload Dish Photo</p>
+              <p style="color:var(--text-muted); font-size:12px; margin:0;">Supports JPG, PNG, WEBP (Max 5MB)</p>
+              <img id="addPreview" class="image-preview" alt="Preview">
+            </div>
+            <input type="hidden" name="image" id="addImageUrl" value="/images/placeholder.svg">
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label class="switch-label">
+              <input type="checkbox" name="available" checked>
+              <span style="font-weight:600; color:#ffffff;">Available for Customers to Order</span>
+            </label>
+          </div>
+
+          <div style="margin-top:24px; display:flex; gap:12px;">
+            <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
+              ✓ Save & Add Dish to Menu
+            </button>
+            <button type="button" class="btn-outline" onclick="switchTab('menu')">
+              Cancel
+            </button>
+          </div>
+          <p id="addItemMsg" style="text-align:center; font-size:13px; margin-top:12px; min-height:20px;"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 4: CATEGORIES MANAGER -->
+    <section id="tab-categories" class="admin-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h2 style="font-size:24px; margin-bottom:4px;">Manage Categories</h2>
+          <p style="color:var(--text-muted); font-size:13px;">Add new categories or update category photos and notes</p>
+        </div>
+        <button class="btn-primary" onclick="openNewCategoryModal()">
+          ➕ Add New Category
+        </button>
+      </div>
+
+      <div id="categoriesList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;"></div>
+    </section>
+
+  </main>
+
+  <!-- EDIT DISH MODAL -->
+  <div id="editItemModal" class="modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="$('#editItemModal').classList.remove('show')">×</button>
+      <span class="section-tag" style="margin-bottom:8px;">Menu Editor</span>
+      <h2 style="margin-bottom:18px;">Edit Dish Details</h2>
+
+      <form id="editItemForm">
+        <input type="hidden" id="editId" name="id">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="editCategory" name="category_id" required></select>
+          </div>
+          <div class="form-group">
+            <label>Dish Name</label>
+            <input id="editName" name="name" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Price</label>
+            <input id="editPrice" name="price" required>
+          </div>
+          <div class="form-group">
+            <label>Price Caption / Portion</label>
+            <input id="editCaption" name="price_caption">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="editDesc" name="description"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Dish Photo</label>
+          <div style="display:flex; gap:14px; align-items:center;">
+            <img id="editThumb" src="/images/placeholder.svg" style="width:70px; height:70px; border-radius:10px; object-fit:cover; border:1px solid var(--border);" alt="">
+            <div style="flex:1;">
+              <input type="file" id="editFileInput" accept="image/*" style="display:none;" onchange="handleImagePreview(event, '#editThumb', '#editImageUrl')">
+              <button type="button" class="btn-icon" onclick="$('#editFileInput').click()">
+                📷 Change Photo
+              </button>
+              <input type="hidden" id="editImageUrl" name="image">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="switch-label">
+            <input type="checkbox" id="editAvailable" name="available">
+            <span style="font-weight:600; color:#ffffff;">Available for Customers to Order</span>
+          </label>
+        </div>
+
+        <div style="margin-top:24px; display:flex; gap:12px;">
+          <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
+            Save Changes
+          </button>
+          <button type="button" class="btn-outline" onclick="$('#editItemModal').classList.remove('show')">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NEW/EDIT CATEGORY MODAL -->
+  <div id="categoryModal" class="modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="$('#categoryModal').classList.remove('show')">×</button>
+      <span class="section-tag" style="margin-bottom:8px;">Category Setup</span>
+      <h2 id="catModalTitle" style="margin-bottom:18px;">Add New Category</h2>
+
+      <form id="categoryForm">
+        <input type="hidden" id="catModalMode" value="create">
+        <input type="hidden" id="catModalId">
+        <div class="form-group">
+          <label>Category Name *</label>
+          <input id="catName" placeholder="e.g. SIZZLING PLATES" required>
+        </div>
+        <div class="form-group">
+          <label>Special Note / Instructions (Optional)</label>
+          <input id="catNote" placeholder="e.g. *Served with unlimited gravy and garlic rice">
+        </div>
+        <div class="form-group">
+          <label>Cover Photo URL (or click to upload)</label>
+          <div style="display:flex; gap:10px;">
+            <input id="catImage" placeholder="/images/placeholder.svg" value="/images/placeholder.svg">
+            <input type="file" id="catFileInput" accept="image/*" style="display:none;" onchange="uploadCategoryPhoto(event)">
+            <button type="button" class="btn-icon" onclick="$('#catFileInput').click()">Upload</button>
+          </div>
+        </div>
+
+        <div style="margin-top:24px; display:flex; gap:12px;">
+          <button type="submit" class="btn-primary" style="flex:1; justify-content:center;">
+            Save Category
+          </button>
+          <button type="button" class="btn-outline" onclick="$('#categoryModal').classList.remove('show')">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    let menuData = null;
+    let currentCategory = null;
+    let currentFilter = "ALL";
+    let ordersList = [];
+    let soundEnabled = true;
+    let previousOrderCount = 0;
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => document.querySelectorAll(s);
+
+    // Audio chime using Web Audio API
+    function playChime() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (e) {
+        console.warn("Audio context not allowed yet:", e);
+      }
+    }
+
+    $("#soundToggle").onclick = () => {
+      soundEnabled = !soundEnabled;
+      $("#soundStatus").textContent = soundEnabled ? "ON" : "OFF";
+      $("#soundToggle").style.color = soundEnabled ? "var(--yellow)" : "var(--text-muted)";
+    };
+
+    // Check staff auth status
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/me");
+        const data = await res.json();
+        if (data.admin) {
+          $("#loginModal").classList.remove("show");
+          await loadAllData();
+        } else {
+          $("#loginModal").classList.add("show");
+        }
+      } catch (err) {
+        $("#loginModal").classList.add("show");
+      }
+    }
+
+    // Login Form Submit
+    $("#loginForm").onsubmit = async e => {
+      e.preventDefault();
+      const payload = Object.fromEntries(new FormData(e.target));
+      const msg = $("#loginMsg");
+      msg.textContent = "Verifying…";
+
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.textContent = "";
+          $("#loginModal").classList.remove("show");
+          await loadAllData();
+        } else {
+          msg.textContent = data.error || "Invalid username or password";
+        }
+      } catch (err) {
+        msg.textContent = "Network error. Please try again.";
+      }
+    };
+
+    // Logout
+    $("#logoutBtn").onclick = async () => {
+      if (confirm("Are you sure you want to log out?")) {
+        await fetch("/api/logout", { method: "POST" });
+        location.reload();
+      }
+    };
+
+    // Tab Navigation
+    $$(".admin-tab-btn").forEach(btn => {
+      btn.onclick = () => switchTab(btn.dataset.tab);
+    });
+
+    function switchTab(tabId) {
+      $$(".admin-tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tabId));
+      $$(".admin-view").forEach(v => v.classList.toggle("active", v.id === `tab-${tabId}`));
+      if (tabId === "orders") renderOrders();
+      if (tabId === "menu") renderMenuManager();
+      if (tabId === "categories") renderCategoriesList();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Load All Data
+    async function loadAllData() {
+      await Promise.all([loadMenu(), loadOrders()]);
+    }
+
+    async function loadMenu() {
+      try {
+        const res = await fetch("/api/menu");
+        menuData = await res.json();
+
+        // Populate category dropdown in Add Item form
+        const select = $("#addCategorySelect");
+        const editSelect = $("#editCategory");
+        const options = menuData.categories.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+        select.innerHTML = options;
+        editSelect.innerHTML = options;
+
+        if (!currentCategory && menuData.categories.length) {
+          currentCategory = menuData.categories[0].id;
+        }
+
+        renderMenuManager();
+        renderCategoriesList();
+      } catch (err) {
+        console.error("Error loading menu:", err);
+      }
+    }
+
+    // Render Menu Manager (Organized by Categories with Add Item Button)
+    function renderMenuManager() {
+      if (!menuData || !menuData.categories) return;
+
+      // Render category pills
+      const pillsBox = $("#categoryPills");
+      pillsBox.innerHTML = menuData.categories.map(c => `
+        <button class="cat-pill ${c.id === currentCategory ? 'active' : ''}" onclick="selectCategory('${c.id}')">
+          <span>${esc(c.name)}</span>
+          <span style="font-size:11px; opacity:0.75;">(${c.items ? c.items.length : 0})</span>
+        </button>
+      `).join("");
+
+      const activeCat = menuData.categories.find(c => c.id === currentCategory) || menuData.categories[0];
+      if (!activeCat) return;
+
+      currentCategory = activeCat.id;
+      $("#mgrCatTag").textContent = "Category Dishes";
+      $("#mgrCatName").textContent = activeCat.name;
+      $("#mgrCatNote").textContent = activeCat.note ? `📌 ${activeCat.note}` : "";
+      $("#mgrCatCount").textContent = `${activeCat.items ? activeCat.items.length : 0} items in this category`;
+      $("#mgrAddDishCatName").textContent = activeCat.name;
+
+      // Wire up Add Dish button for this category
+      $("#mgrAddDishBtn").onclick = () => {
+        $("#addCategorySelect").value = activeCat.id;
+        switchTab("add-item");
+      };
+
+      // Render items for this category
+      const itemsBox = $("#mgrItemsGrid");
+      if (!activeCat.items || !activeCat.items.length) {
+        itemsBox.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:var(--surface); border:1px dashed var(--border); border-radius:18px;">
+            <div style="font-size:36px; margin-bottom:12px;">🍽️</div>
+            <h3>No dishes in ${esc(activeCat.name)} yet</h3>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:18px;">Add a new dish to this category using the button below.</p>
+            <button class="btn-primary" onclick="$('#addCategorySelect').value='${activeCat.id}'; switchTab('add-item');">
+              ➕ Add Dish to ${esc(activeCat.name)}
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      itemsBox.innerHTML = activeCat.items.map(item => `
+        <div class="admin-item-card">
+          <div class="admin-item-top">
+            <img src="${item.image || '/images/placeholder.svg'}" class="admin-item-thumb" onerror="this.src='/images/placeholder.svg'" alt="">
+            <div class="admin-item-info">
+              <h4>${esc(item.name)}</h4>
+              <div class="item-price">${esc(item.price)}</div>
+              ${item.price_caption ? `<div style="font-size:11px; color:var(--text-dim);">${esc(item.price_caption)}</div>` : ""}
+              <p>${esc(item.description || "No description provided.")}</p>
+            </div>
+          </div>
+
+          <div class="admin-item-actions">
+            <label class="switch-label">
+              <input type="checkbox" ${item.available ? "checked" : ""} onchange="toggleAvailable('${item.id}', this.checked)">
+              <span>${item.available ? '<span style="color:var(--yellow);">Available</span>' : '<span style="color:#ef4444;">Sold Out</span>'}</span>
+            </label>
+
+            <div class="action-btns">
+              <button class="btn-icon" onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&#39;")})'>
+                ✏️ Edit
+              </button>
+              <button class="btn-icon danger" onclick="deleteItem('${item.id}')">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function selectCategory(id) {
+      currentCategory = id;
+      renderMenuManager();
+    }
+
+    // Toggle item availability
+    async function toggleAvailable(id, isAvailable) {
+      try {
+        const item = findItem(id);
+        if (!item) return;
+        const res = await fetch(`/api/admin/items/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category_id: item.category_id,
+            name: item.name,
+            description: item.description,
+            price: item.price,
+            price_caption: item.price_caption,
+            image: item.image,
+            available: isAvailable
+          })
+        });
+        if (res.ok) {
+          item.available = isAvailable;
+          toast(isAvailable ? "Item marked as Available" : "Item marked as Sold Out");
+          renderMenuManager();
+        }
+      } catch (err) {
+        alert("Failed to update status.");
+      }
+    }
+
+    // Delete item
+    async function deleteItem(id) {
+      const item = findItem(id);
+      if (!confirm(`Are you sure you want to delete "${item ? item.name : 'this item'}"?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/items/${encodeURIComponent(id)}`, {
+          method: "DELETE"
+        });
+        if (res.ok) {
+          toast("Dish deleted successfully");
+          await loadMenu();
+        }
+      } catch (err) {
+        alert("Failed to delete dish.");
+      }
+    }
+
+    // Create New Dish Submit
+    $("#createItemForm").onsubmit = async e => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      data.available = form.available.checked;
+
+      const msg = $("#addItemMsg");
+      msg.style.color = "var(--text-muted)";
+      msg.textContent = "Adding dish to menu…";
+
+      try {
+        const res = await fetch("/api/admin/items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (res.ok) {
+          msg.style.color = "var(--yellow)";
+          msg.textContent = "✓ Dish added successfully!";
+          toast(`Added "${data.name}"!`);
+          form.reset();
+          $("#addPreview").style.display = "none";
+          $("#addImageUrl").value = "/images/placeholder.svg";
+          currentCategory = data.category_id;
+          await loadMenu();
+          setTimeout(() => {
+            msg.textContent = "";
+            switchTab("menu");
+          }, 1200);
+        } else {
+          msg.style.color = "#ef4444";
+          msg.textContent = result.error || "Failed to add dish.";
+        }
+      } catch (err) {
+        msg.style.color = "#ef4444";
+        msg.textContent = "Network error. Please try again.";
+      }
+    };
+
+    // Open Edit Modal
+    function openEditModal(item) {
+      $("#editId").value = item.id;
+      $("#editCategory").value = item.category_id;
+      $("#editName").value = item.name;
+      $("#editPrice").value = item.price;
+      $("#editCaption").value = item.price_caption || "";
+      $("#editDesc").value = item.description || "";
+      $("#editThumb").src = item.image || "/images/placeholder.svg";
+      $("#editImageUrl").value = item.image || "/images/placeholder.svg";
+      $("#editAvailable").checked = !!item.available;
+      $("#editItemModal").classList.add("show");
+    }
+
+    // Save Edit Modal
+    $("#editItemForm").onsubmit = async e => {
+      e.preventDefault();
+      const id = $("#editId").value;
+      const data = {
+        category_id: $("#editCategory").value,
+        name: $("#editName").value,
+        price: $("#editPrice").value,
+        price_caption: $("#editCaption").value,
+        description: $("#editDesc").value,
+        image: $("#editImageUrl").value,
+        available: $("#editAvailable").checked
+      };
+
+      try {
+        const res = await fetch(`/api/admin/items/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          $("#editItemModal").classList.remove("show");
+          toast(`Updated "${data.name}"!`);
+          await loadMenu();
+        } else {
+          const err = await res.json();
+          alert(err.error || "Failed to update item.");
+        }
+      } catch (err) {
+        alert("Network error updating dish.");
+      }
+    };
+
+    // Generic Image Preview & Upload Helper
+    async function handleImagePreview(e, previewSelector, hiddenUrlSelector) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const preview = $(previewSelector);
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      try {
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          body: formData
+        });
+        const json = await res.json();
+        if (res.ok && json.url) {
+          $(hiddenUrlSelector).value = json.url;
+          toast("Photo uploaded successfully!");
+        } else {
+          alert(json.error || "Upload failed");
+        }
+      } catch (err) {
+        alert("Error uploading image");
+      }
+    }
+
+    // Categories Manager Tab
+    function renderCategoriesList() {
+      const box = $("#categoriesList");
+      if (!menuData || !menuData.categories || !box) return;
+
+      box.innerHTML = menuData.categories.map(c => {
+        const count = c.items ? c.items.length : 0;
+        return `
+          <div class="panel" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; gap:12px; align-items:center;">
+              <img src="${c.image || '/images/placeholder.svg'}" style="width:64px; height:64px; border-radius:12px; object-fit:cover; border:1px solid var(--border);" alt="">
+              <div style="flex:1;">
+                <h3 style="font-size:17px; margin-bottom:2px;">${esc(c.name)}</h3>
+                <span class="category-badge">${count} dishes</span>
+              </div>
+            </div>
+            ${c.note ? `<div style="font-size:12px; color:#ffb8c0; background:rgba(147,38,53,0.2); padding:6px 10px; border-radius:6px;">📌 ${esc(c.note)}</div>` : ""}
+            <div style="display:flex; gap:8px; margin-top:auto; padding-top:10px; border-top:1px solid var(--border);">
+              <button class="btn-icon" style="flex:1; justify-content:center;" onclick='editCategoryPrompt(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
+                ✏️ Edit
+              </button>
+              <button class="btn-icon danger" onclick="deleteCategory('${c.id}')">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openNewCategoryModal() {
+      $("#catModalTitle").textContent = "Add New Category";
+      $("#catModalMode").value = "create";
+      $("#catName").value = "";
+      $("#catNote").value = "";
+      $("#catImage").value = "/images/placeholder.svg";
+      $("#categoryModal").classList.add("show");
+    }
+
+    function editCategoryPrompt(cat) {
+      $("#catModalTitle").textContent = "Edit Category: " + cat.name;
+      $("#catModalMode").value = "edit";
+      $("#catModalId").value = cat.id;
+      $("#catName").value = cat.name;
+      $("#catNote").value = cat.note || "";
+      $("#catImage").value = cat.image || "/images/placeholder.svg";
+      $("#categoryModal").classList.add("show");
+    }
+
+    async function uploadCategoryPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const f = new FormData();
+      f.append("image", file);
+      const r = await fetch("/api/admin/upload", { method: "POST", body: f });
+      const j = await r.json();
+      if (r.ok) {
+        $("#catImage").value = j.url;
+        toast("Category photo uploaded!");
+      } else alert(j.error || "Upload failed");
+    }
+
+    $("#categoryForm").onsubmit = async e => {
+      e.preventDefault();
+      const mode = $("#catModalMode").value;
+      const name = $("#catName").value;
+      const note = $("#catNote").value;
+      const image = $("#catImage").value;
+
+      try {
+        if (mode === "create") {
+          const res = await fetch("/api/admin/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, note, image })
+          });
+          if (res.ok) {
+            $("#categoryModal").classList.remove("show");
+            toast("Category created!");
+            await loadMenu();
+          } else {
+            alert((await res.json()).error);
+          }
+        } else {
+          const id = $("#catModalId").value;
+          const res = await fetch(`/api/admin/categories/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, note, image })
+          });
+          if (res.ok) {
+            $("#categoryModal").classList.remove("show");
+            toast("Category updated!");
+            await loadMenu();
+          }
+        }
+      } catch (err) {
+        alert("Error saving category.");
+      }
+    };
+
+    async function deleteCategory(id) {
+      if (!confirm("Are you sure? This will delete the category and all its items!")) return;
+      const res = await fetch(`/api/admin/categories/${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (res.ok) {
+        toast("Category deleted.");
+        await loadMenu();
+      }
+    }
+
+    // Orders Dashboard
+    async function loadOrders() {
+      try {
+        const res = await fetch("/api/orders");
+        if (!res.ok) return;
+        ordersList = await res.json();
+
+        // Check for new incoming orders
+        const newOrders = ordersList.filter(o => o.status === "NEW");
+        const badge = $("#ordersBadge");
+        if (newOrders.length > 0) {
+          badge.textContent = newOrders.length;
+          badge.style.display = "inline-block";
+        } else {
+          badge.style.display = "none";
+        }
+
+        if (newOrders.length > previousOrderCount) {
+          playChime();
+        }
+        previousOrderCount = newOrders.length;
+
+        renderOrders();
+      } catch (err) {
+        console.error("Error loading orders:", err);
+      }
+    }
+
+    // Order status filtering
+    $$(".status-filter-btn").forEach(btn => {
+      btn.onclick = () => {
+        $$(".status-filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.filter;
+        renderOrders();
+      };
+    });
+
+    function renderOrders() {
+      const box = $("#ordersGrid");
+      if (!box) return;
+
+      const filtered = currentFilter === "ALL" ? ordersList : ordersList.filter(o => o.status === currentFilter);
+
+      if (!filtered.length) {
+        box.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted);">
+            <div style="font-size:36px; margin-bottom:12px;">📋</div>
+            <p>No orders found under "${currentFilter}".</p>
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = filtered.map(o => `
+        <div class="order-card status-${o.status}">
+          <div class="order-top">
+            <div>
+              <span class="order-id">#${o.id}</span>
+              <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${formatDate(o.created_at)}</span>
+            </div>
+            <span class="status-badge ${o.status}">${o.status}</span>
+          </div>
+
+          <div>
+            <div class="order-customer">${esc(o.customer_name)}</div>
+            <div class="order-meta">
+              ${o.phone ? `📞 ${esc(o.phone)} · ` : ``}<strong style="color:#ffffff;">${esc(o.order_type)}</strong>
+              ${o.address ? `<br>📍 ${esc(o.address)}` : ""}
+              ${o.notes ? `<br><em style="color:#ffb8c0;">Notes: "${esc(o.notes)}"</em>` : ""}
+            </div>
+          </div>
+
+          <div class="order-items-list">
+            ${Array.isArray(o.items) ? o.items.map(x => `
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span>${esc(x.name)} × <strong>${x.qty}</strong></span>
+                <span style="color:var(--yellow);">${money(x.qty * (x.price || 0))}</span>
+              </div>
+            `).join("") : ""}
+          </div>
+
+          <div class="order-total-row">
+            <span>Total Amount</span>
+            <b>${money(o.total)}</b>
+          </div>
+
+          <div style="margin-top:8px;">
+            <label style="font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; display:block; margin-bottom:4px;">Update Status:</label>
+            <select onchange="updateOrderStatus(${o.id}, this.value)">
+              ${["NEW", "CONFIRMED", "PREPARING", "READY", "COMPLETED", "CANCELLED"].map(s => `
+                <option value="${s}" ${s === o.status ? "selected" : ""}>${s}</option>
+              `).join("")}
+            </select>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          toast(`Order #${orderId} marked as ${newStatus}`);
+          await loadOrders();
+        } else {
+          alert("Failed to update status");
+        }
+      } catch (err) {
+        alert("Network error");
+      }
+    }
+
+    // Helper functions
+    function findItem(id) {
+      for (const c of menuData.categories) {
+        if (!c.items) continue;
+        const it = c.items.find(x => x.id === id);
+        if (it) return { ...it, category_id: c.id };
+      }
+      return null;
+    }
+
+    function esc(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function money(n) {
+      return "₱" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatDate(d) {
+      try {
+        return new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function toast(msg) {
+      const t = $("#toast");
+      if (!t) return;
+      t.textContent = msg;
+      t.style.opacity = "1";
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.style.opacity = "0"; }, 2000);
+    }
+
+    // Initialize
+    checkAuth();
+    setInterval(() => {
+      if (!$("#loginModal").classList.contains("show")) {
+        loadOrders();
+      }
+    }, 10000);
+  </script>
+</body>
+</html>
