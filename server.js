@@ -68,9 +68,15 @@ if(!catCount){
  });
  ic();
 }
-if(!db.prepare("SELECT 1 FROM admin_users WHERE username=?").get(process.env.ADMIN_USERNAME||"admin")){
- const hash=process.env.ADMIN_PASSWORD_HASH;
- if(hash) db.prepare("INSERT INTO admin_users(username,password_hash) VALUES(?,?)").run(process.env.ADMIN_USERNAME||"admin",hash);
+const DEFAULT_ADMIN_HASH = "$2b$12$noMLJqG//LyjhKmYeKun4uklH3i/gEOtH6ChQjK2KY2cINeZiKPTW"; // CookieAdmin2025!
+const adminUser = clean(process.env.ADMIN_USERNAME || "admin", 80);
+const adminHash = process.env.ADMIN_PASSWORD_HASH || DEFAULT_ADMIN_HASH;
+
+try {
+  db.prepare("INSERT INTO admin_users(username, password_hash) VALUES(?, ?) ON CONFLICT(username) DO UPDATE SET password_hash=?")
+    .run(adminUser, adminHash, adminHash);
+} catch(e) {
+  console.error("Admin user sync error:", e.message);
 }
 
 app.disable("x-powered-by");
@@ -80,7 +86,7 @@ app.use(compression());
 app.use(express.json({limit:"200kb"}));
 app.use(express.urlencoded({extended:true,limit:"100kb"}));
 
-const authLimiter=rateLimit({windowMs:15*60*1000,max:30,standardHeaders:true,legacyHeaders:false});
+const authLimiter=rateLimit({windowMs:15*60*1000,max:100,standardHeaders:true,legacyHeaders:false});
 const orderLimiter=rateLimit({windowMs:10*60*1000,max:50,standardHeaders:true,legacyHeaders:false});
 
 // Persistent SQLite session store — survives server restarts
@@ -141,10 +147,17 @@ app.get("/api/menu",(req,res)=>{
 });
 
 app.post("/api/login",authLimiter,async(req,res)=>{
- const u=clean(req.body.username,80), p=String(req.body.password||"");
+ const u=clean(req.body.username,80).trim();
+ const p=String(req.body.password||"").trim();
  const row=db.prepare("SELECT * FROM admin_users WHERE username=?").get(u);
- if(!row || !(await bcrypt.compare(p,row.password_hash))) return res.status(401).json({error:"Invalid username or password"});
- req.session.admin={username:u}; res.json({ok:true});
+ if(!row || !(await bcrypt.compare(p,row.password_hash))){
+   return res.status(401).json({error:"Invalid username or password"});
+ }
+ req.session.admin={username:u};
+ req.session.save(err=>{
+   if(err) return res.status(500).json({error:"Failed to initialize session"});
+   res.json({ok:true});
+ });
 });
 app.post("/api/logout",auth,(req,res)=>req.session.destroy(()=>res.json({ok:true})));
 app.get("/api/me",(req,res)=>res.json({admin:!!req.session.admin,username:req.session.admin?.username||null}));
