@@ -108,6 +108,8 @@ const upload=multer({
  fileFilter:(_,file,cb)=>cb(null,/^image\/(jpeg|png|webp|gif|svg\+xml)$/.test(file.mimetype))
 });
 
+app.get("/api/version",(req,res)=>res.json({version:"v3-session-fix",cookieSecure:false,trustProxy:true,hasSession:!!req.session,hasAdmin:!!req.session.admin}));
+
 function auth(req,res,next){ if(req.session.admin) return next(); res.status(401).json({error:"Unauthorized"}); }
 function clean(v,max=500){return String(v??"").trim().slice(0,max)}
 function priceNumber(v){
