@@ -305,7 +305,7 @@ main {
   color: var(--dark-red);
   font-weight: normal;
   display: inline-block;
-  text-shadow: 0 4px 18px rgba(147, 38, 53, 0.5);
+  text-shadow: 0 4px 18px rgb(255, 253, 253);
 }
 
 .hero h1 .accent-script {
