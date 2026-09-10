@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS orders(
  created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS admin_users(username TEXT PRIMARY KEY,password_hash TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS sessions(sid TEXT PRIMARY KEY, sess TEXT NOT NULL, expired INTEGER NOT NULL);
 `);
 
 const seed=JSON.parse(fs.readFileSync(path.join(DATA_DIR,"menu.json"),"utf8"));
@@ -56,6 +57,7 @@ if(!db.prepare("SELECT 1 FROM admin_users WHERE username=?").get(process.env.ADM
 }
 
 app.disable("x-powered-by");
+app.set("trust proxy", 1); // Railway sits behind HTTPS proxy
 app.use(helmet({contentSecurityPolicy:false,crossOriginResourcePolicy:{policy:"cross-origin"}}));
 app.use(compression());
 app.use(express.json({limit:"200kb"}));
@@ -64,9 +66,32 @@ app.use(express.urlencoded({extended:true,limit:"100kb"}));
 const authLimiter=rateLimit({windowMs:15*60*1000,max:30,standardHeaders:true,legacyHeaders:false});
 const orderLimiter=rateLimit({windowMs:10*60*1000,max:50,standardHeaders:true,legacyHeaders:false});
 
+// Persistent SQLite session store — survives server restarts
+class SqliteStore extends session.Store {
+ get(sid,cb){
+  try{
+   const row=db.prepare("SELECT sess,expired FROM sessions WHERE sid=?").get(sid);
+   if(!row) return cb(null,null);
+   if(Date.now()>row.expired){db.prepare("DELETE FROM sessions WHERE sid=?").run(sid);return cb(null,null);}
+   cb(null,JSON.parse(row.sess));
+  }catch(e){cb(e);}
+ }
+ set(sid,sess,cb){
+  try{
+   const exp=sess.cookie?.expires?new Date(sess.cookie.expires).getTime():Date.now()+8*60*60*1000;
+   db.prepare("INSERT OR REPLACE INTO sessions(sid,sess,expired) VALUES(?,?,?)").run(sid,JSON.stringify(sess),exp);
+   cb(null);
+  }catch(e){cb(e);}
+ }
+ destroy(sid,cb){
+  try{db.prepare("DELETE FROM sessions WHERE sid=?").run(sid);cb(null);}catch(e){cb(e);}
+ }
+}
+
 app.use(session({
  secret:process.env.SESSION_SECRET||"CHANGE_ME",
  resave:false,saveUninitialized:false,
+ store:new SqliteStore(),
  cookie:{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",maxAge:8*60*60*1000}
 }));
 
