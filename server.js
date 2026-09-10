@@ -13,7 +13,7 @@ const multer=require("multer");
 const app=express();
 const PORT=Number(process.env.PORT||3000);
 const DATA_DIR=path.join(__dirname,"data");
-const UPLOAD_DIR=path.join(__dirname,"public","uploads");
+const UPLOAD_DIR=path.join(DATA_DIR,"uploads"); // persistent volume — survives restarts
 fs.mkdirSync(DATA_DIR,{recursive:true}); fs.mkdirSync(UPLOAD_DIR,{recursive:true});
 
 const db=new Database(path.join(DATA_DIR,"cookies.db"));
@@ -223,6 +223,7 @@ app.post("/api/admin/upload",auth,upload.single("image"),(req,res)=>{
  res.json({ok:true,url:"/uploads/"+req.file.filename});
 });
 
+app.use("/uploads", express.static(UPLOAD_DIR)); // serve persistent uploads
 app.use(express.static(path.join(__dirname,"public"),{extensions:["html"]}));
 app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
