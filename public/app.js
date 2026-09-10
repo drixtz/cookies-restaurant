@@ -333,6 +333,12 @@ function updateOrderTypeFields() {
   const tableInput = $("#tableNumberInput");
   const tokenInput = $("#sessionTokenInput");
   const passcodeGroup = $("#passcodeGroup");
+  const nameGroup = $("#customerNameGroup");
+  const nameLabel = $("#customerNameLabel");
+  const nameInput = $("#customerNameInput");
+  const phoneGroup = $("#phoneGroup");
+  const phoneLabel = $("#phoneLabel");
+  const phoneInput = $("#phoneInput");
   const addressGroup = $("#addressGroup");
   const addressInput = $("#addressInput");
 
@@ -340,6 +346,7 @@ function updateOrderTypeFields() {
   const val = typeSelect.value;
 
   if (val === "Dine-in") {
+    // Dine-in: Table session required. No name or phone number needed!
     if (tableGroup) tableGroup.style.display = "block";
     if (tableInput) {
       tableInput.required = true;
@@ -351,27 +358,71 @@ function updateOrderTypeFields() {
     if (passcodeGroup) {
       passcodeGroup.style.display = currentSessionToken ? "none" : "block";
     }
+
+    // Name & Phone hidden and not required for dine-in
+    if (nameGroup) nameGroup.style.display = "none";
+    if (nameInput) {
+      nameInput.required = false;
+      nameInput.value = "";
+    }
+    if (phoneGroup) phoneGroup.style.display = "none";
+    if (phoneInput) {
+      phoneInput.required = false;
+      phoneInput.value = "";
+    }
+
+    if (addressGroup) addressGroup.style.display = "none";
+    if (addressInput) {
+      addressInput.required = false;
+      addressInput.value = "";
+    }
+  } else if (val === "Takeout") {
+    // Takeout: Needs name (first name/nickname, wag na full name), phone is optional
+    if (tableGroup) tableGroup.style.display = "none";
+    if (tableInput) tableInput.required = false;
+    if (passcodeGroup) passcodeGroup.style.display = "none";
+
+    if (nameGroup) nameGroup.style.display = "block";
+    if (nameLabel) nameLabel.textContent = "Name * (First Name or Nickname)";
+    if (nameInput) {
+      nameInput.placeholder = "e.g. Maria";
+      nameInput.required = true;
+    }
+
+    if (phoneGroup) phoneGroup.style.display = "block";
+    if (phoneLabel) phoneLabel.textContent = "Phone Number (Optional)";
+    if (phoneInput) {
+      phoneInput.placeholder = "e.g. 0917 123 4567";
+      phoneInput.required = false;
+    }
+
     if (addressGroup) addressGroup.style.display = "none";
     if (addressInput) {
       addressInput.required = false;
       addressInput.value = "";
     }
   } else if (val === "Delivery") {
+    // Delivery: Full name, phone number, and address are required
     if (tableGroup) tableGroup.style.display = "none";
     if (tableInput) tableInput.required = false;
     if (passcodeGroup) passcodeGroup.style.display = "none";
+
+    if (nameGroup) nameGroup.style.display = "block";
+    if (nameLabel) nameLabel.textContent = "Full Name *";
+    if (nameInput) {
+      nameInput.placeholder = "e.g. Maria Santos";
+      nameInput.required = true;
+    }
+
+    if (phoneGroup) phoneGroup.style.display = "block";
+    if (phoneLabel) phoneLabel.textContent = "Phone Number *";
+    if (phoneInput) {
+      phoneInput.placeholder = "e.g. 0917 123 4567";
+      phoneInput.required = true;
+    }
+
     if (addressGroup) addressGroup.style.display = "block";
     if (addressInput) addressInput.required = true;
-  } else {
-    // Takeout
-    if (tableGroup) tableGroup.style.display = "none";
-    if (tableInput) tableInput.required = false;
-    if (passcodeGroup) passcodeGroup.style.display = "none";
-    if (addressGroup) addressGroup.style.display = "none";
-    if (addressInput) {
-      addressInput.required = false;
-      addressInput.value = "";
-    }
   }
 }
 
@@ -413,6 +464,14 @@ $("#checkoutForm").onsubmit = async e => {
   const form = e.target;
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
+
+  if (data.order_type === "Dine-in") {
+    if (!data.customer_name) {
+      data.customer_name = data.table_number ? `Table #${data.table_number}` : "Dine-in Guest";
+    }
+    data.phone = "";
+  }
+
   data.items = cart.map(x => ({
     id: x.id,
     name: x.name,

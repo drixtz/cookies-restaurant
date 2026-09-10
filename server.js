@@ -180,47 +180,78 @@ app.delete("/api/orders/:id",auth,(req,res)=>{
 });
 
 app.post("/api/orders",orderLimiter,(req,res)=>{
- const customer_name=clean(req.body.customer_name,100);
- const phone=clean(req.body.phone,40);
- const order_type=clean(req.body.order_type,30);
+ let customer_name=clean(req.body.customer_name,100);
+ let phone=clean(req.body.phone,40);
+ const order_type=clean(req.body.order_type,30) || "Dine-in";
  const table_number=clean(req.body.table_number,50);
  const address=clean(req.body.address,300);
  const notes=clean(req.body.notes,500);
  let items;
  try{items=Array.isArray(req.body.items)?req.body.items:[]}catch{items=[]}
- if(!customer_name||!items.length) return res.status(400).json({error:"Name and at least one item are required."});
-  let session_token=clean(req.body.session_token,100);
-  const passcode=clean(req.body.passcode,20);
-  if(order_type.toLowerCase().includes("dine")){
-    if(!table_number) return res.status(400).json({error:"Please enter your Table Number for Dine-in orders."});
-    const tbl=db.prepare("SELECT * FROM table_sessions WHERE table_number=?").get(table_number);
-    if(!tbl||!tbl.is_active){
-      return res.status(400).json({error:`Table #${table_number} is currently CLOSED. Please ask staff to open your table session.`});
-    }
-    const tokenMatch=(session_token && tbl.session_token && session_token===tbl.session_token);
-    const codeMatch=(passcode && tbl.passcode && passcode===tbl.passcode);
-    if(!tokenMatch && !codeMatch){
-      return res.status(400).json({error:`Dining session for Table #${table_number} has expired or is invalid. Please scan the active QR code or ask staff for table passcode.`});
-    }
-    if(!session_token && tbl.session_token) session_token=tbl.session_token;
-  }
 
-  const normalized=items.map(x=>({id:clean(x.id,100),name:clean(x.name,150),qty:Math.max(1,Math.min(99,Number(x.qty)||1)),price:priceNumber(x.price),image:clean(x.image,500)})).filter(x=>x.name&&x.price>0);
-  if(!normalized.length)return res.status(400).json({error:"No valid items."});
-  const total=normalized.reduce((a,x)=>a+x.qty*x.price,0);
-  const created_at=new Date().toISOString();
-  const info=db.prepare("INSERT INTO orders(customer_name,phone,order_type,table_number,session_token,address,notes,items_json,total,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)")
-    .run(customer_name,phone,order_type,table_number,session_token,address,notes,JSON.stringify(normalized),total,created_at);
-  const order={id:info.lastInsertRowid,customer_name,phone,order_type,table_number,session_token,address,notes,items:normalized,total,created_at};
-  sendMessenger(order).catch(e=>console.error("Messenger:",e.message));
-  res.json({ok:true,orderId:info.lastInsertRowid});
+ if(!items.length) return res.status(400).json({error:"At least one item is required."});
+
+ const isDineIn = order_type.toLowerCase().includes("dine");
+ const isDelivery = order_type.toLowerCase().includes("delivery");
+ const isTakeout = order_type.toLowerCase().includes("takeout");
+
+ let session_token=clean(req.body.session_token,100);
+ const passcode=clean(req.body.passcode,20);
+
+ if(isDineIn){
+   if(!table_number) return res.status(400).json({error:"Please enter your Table Number for Dine-in orders."});
+   const tbl=db.prepare("SELECT * FROM table_sessions WHERE table_number=?").get(table_number);
+   if(!tbl||!tbl.is_active){
+     return res.status(400).json({error:`Table #${table_number} is currently CLOSED. Please ask staff to open your table session.`});
+   }
+   const tokenMatch=(session_token && tbl.session_token && session_token===tbl.session_token);
+   const codeMatch=(passcode && tbl.passcode && passcode===tbl.passcode);
+   if(!tokenMatch && !codeMatch){
+     return res.status(400).json({error:`Dining session for Table #${table_number} has expired or is invalid. Please scan the active QR code or ask staff for table passcode.`});
+   }
+   if(!session_token && tbl.session_token) session_token=tbl.session_token;
+
+   // Dine-in: name is not required (defaults to Table #X), phone is removed
+   if(!customer_name){
+     customer_name = `Table #${table_number}`;
+   }
+   phone = "";
+ } else if(isTakeout){
+   // Takeout: name is required (first name/nickname), phone is optional
+   if(!customer_name){
+     return res.status(400).json({error:"Please enter your Name (First name or Nickname) for Takeout."});
+   }
+ } else if(isDelivery){
+   // Delivery: full name, phone number, and address are required
+   if(!customer_name){
+     return res.status(400).json({error:"Please enter your Full Name for Delivery."});
+   }
+   if(!phone){
+     return res.status(400).json({error:"Please enter your Phone Number for Delivery."});
+   }
+   if(!address){
+     return res.status(400).json({error:"Please enter your Delivery Address."});
+   }
+ } else {
+   if(!customer_name) customer_name = "Guest";
+ }
+
+ const normalized=items.map(x=>({id:clean(x.id,100),name:clean(x.name,150),qty:Math.max(1,Math.min(99,Number(x.qty)||1)),price:priceNumber(x.price),image:clean(x.image,500)})).filter(x=>x.name&&x.price>0);
+ if(!normalized.length)return res.status(400).json({error:"No valid items."});
+ const total=normalized.reduce((a,x)=>a+x.qty*x.price,0);
+ const created_at=new Date().toISOString();
+ const info=db.prepare("INSERT INTO orders(customer_name,phone,order_type,table_number,session_token,address,notes,items_json,total,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)")
+   .run(customer_name,phone,order_type,table_number,session_token,address,notes,JSON.stringify(normalized),total,created_at);
+ const order={id:info.lastInsertRowid,customer_name,phone,order_type,table_number,session_token,address,notes,items:normalized,total,created_at};
+ sendMessenger(order).catch(e=>console.error("Messenger:",e.message));
+ res.json({ok:true,orderId:info.lastInsertRowid});
 });
 
 async function sendMessenger(order){
  const pageId=process.env.MESSENGER_PAGE_ID, token=process.env.MESSENGER_PAGE_ACCESS_TOKEN;
  if(!pageId||!token)return;
  const lines=order.items.map(i=>`• ${i.name} x${i.qty} = ₱${(i.qty*i.price).toFixed(2)}`).join("\n");
- const text=`🍪 NEW ORDER #${order.id}\nCustomer: ${order.customer_name}\nPhone: ${order.phone}\nType: ${order.order_type}\n${order.table_number?`Table: #${order.table_number}\n`:""}${order.address?`Address: ${order.address}\n`:""}\n${lines}\n\nTOTAL: ₱${order.total.toFixed(2)}${order.notes?`\nNotes: ${order.notes}`:""}`;
+ const text=`🍪 NEW ORDER #${order.id}\nCustomer: ${order.customer_name}\n${order.phone?`Phone: ${order.phone}\n`:""}Type: ${order.order_type}\n${order.table_number?`Table: #${order.table_number}\n`:""}${order.address?`Address: ${order.address}\n`:""}\n${lines}\n\nTOTAL: ₱${order.total.toFixed(2)}${order.notes?`\nNotes: ${order.notes}`:""}`;
  const r=await fetch(`https://graph.facebook.com/v23.0/${encodeURIComponent(pageId)}/messages?access_token=${encodeURIComponent(token)}`,{
    method:"POST",headers:{"Content-Type":"application/json"},
    body:JSON.stringify({recipient:{id:pageId},message:{text}})

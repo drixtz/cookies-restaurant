@@ -157,15 +157,7 @@
       <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px">Your order will be instantly received by Cookie's kitchen staff.</p>
 
       <form id="checkoutForm">
-        <div class="form-group">
-          <label>Full Name *</label>
-          <input name="customer_name" placeholder="e.g. Maria Santos" required>
-        </div>
-        <div class="form-group">
-          <label>Phone Number (if applicable)</label>
-          <input name="phone" placeholder="e.g. 0917 123 4567">
-        </div>
-        <div class="form-group">
+        <div class="form-group" id="orderTypeGroup">
           <label>Order Type *</label>
           <select name="order_type" id="orderTypeSelect">
             <option value="Dine-in" selected>Dine-in</option>
@@ -173,15 +165,28 @@
             <option value="Delivery">Delivery</option>
           </select>
         </div>
+
         <div class="form-group" id="tableNumberGroup">
           <label>Table Number * <span id="tableSessionStatus" style="font-size:12px; font-weight:normal; color:var(--yellow);">(Staff-activated dining session)</span></label>
-          <input name="table_number" id="tableNumberInput" placeholder="e.g. 1, 5" required>
+          <input name="table_number" id="tableNumberInput" placeholder="e.g. 1, 5">
           <input type="hidden" name="session_token" id="sessionTokenInput">
         </div>
+
         <div class="form-group" id="passcodeGroup" style="display:none;">
           <label>Table Passcode <span style="font-size:12px; font-weight:normal; color:var(--text-muted);">(4-digit code from staff)</span></label>
           <input name="passcode" id="passcodeInput" placeholder="e.g. 4821" maxlength="10">
         </div>
+
+        <div class="form-group" id="customerNameGroup" style="display:none;">
+          <label id="customerNameLabel">Name *</label>
+          <input name="customer_name" id="customerNameInput" placeholder="e.g. Maria">
+        </div>
+
+        <div class="form-group" id="phoneGroup" style="display:none;">
+          <label id="phoneLabel">Phone Number</label>
+          <input name="phone" id="phoneInput" placeholder="e.g. 0917 123 4567">
+        </div>
+
         <div class="form-group" id="addressGroup" style="display:none;">
           <label>Delivery Address *</label>
           <input name="address" id="addressInput" placeholder="Barangay, Street, Landmark">
