@@ -256,6 +256,83 @@ $("#cartFab").onclick = openCart;
 $("#closeCart").onclick = closeCart;
 $("#overlay").onclick = closeCart;
 
+// Dine-in Table Session & Order Type logic
+let currentTable = sessionStorage.getItem("cookies_table") || "";
+
+function initTableSession() {
+  const params = new URLSearchParams(window.location.search);
+  const tableParam = params.get("table") || params.get("t");
+  if (tableParam) {
+    currentTable = tableParam.trim();
+    sessionStorage.setItem("cookies_table", currentTable);
+  }
+
+  const banner = $("#tableIndicatorBanner");
+  const bannerNum = $("#tableBannerNumber");
+  if (currentTable && banner && bannerNum) {
+    bannerNum.textContent = currentTable.toLowerCase().startsWith("table") ? currentTable : `Table #${currentTable}`;
+    banner.style.display = "flex";
+  } else if (banner) {
+    banner.style.display = "none";
+  }
+}
+
+const clearTableBtn = $("#clearTableBtn");
+if (clearTableBtn) {
+  clearTableBtn.onclick = () => {
+    currentTable = "";
+    sessionStorage.removeItem("cookies_table");
+    const banner = $("#tableIndicatorBanner");
+    if (banner) banner.style.display = "none";
+    const tableInput = $("#tableNumberInput");
+    if (tableInput) tableInput.value = "";
+    toast("Table selection cleared.");
+  };
+}
+
+function updateOrderTypeFields() {
+  const typeSelect = $("#orderTypeSelect");
+  const tableGroup = $("#tableNumberGroup");
+  const tableInput = $("#tableNumberInput");
+  const addressGroup = $("#addressGroup");
+  const addressInput = $("#addressInput");
+
+  if (!typeSelect) return;
+  const val = typeSelect.value;
+
+  if (val === "Dine-in") {
+    if (tableGroup) tableGroup.style.display = "block";
+    if (tableInput) {
+      tableInput.required = true;
+      if (currentTable && !tableInput.value) tableInput.value = currentTable;
+    }
+    if (addressGroup) addressGroup.style.display = "none";
+    if (addressInput) {
+      addressInput.required = false;
+      addressInput.value = "";
+    }
+  } else if (val === "Delivery") {
+    if (tableGroup) tableGroup.style.display = "none";
+    if (tableInput) tableInput.required = false;
+    if (addressGroup) addressGroup.style.display = "block";
+    if (addressInput) addressInput.required = true;
+  } else {
+    // Takeout
+    if (tableGroup) tableGroup.style.display = "none";
+    if (tableInput) tableInput.required = false;
+    if (addressGroup) addressGroup.style.display = "none";
+    if (addressInput) {
+      addressInput.required = false;
+      addressInput.value = "";
+    }
+  }
+}
+
+const orderTypeSelect = $("#orderTypeSelect");
+if (orderTypeSelect) {
+  orderTypeSelect.onchange = updateOrderTypeFields;
+}
+
 // Checkout handling
 $("#checkoutBtn").onclick = () => {
   if (!cart.length) {
@@ -263,6 +340,7 @@ $("#checkoutBtn").onclick = () => {
     return;
   }
   closeCart();
+  updateOrderTypeFields();
   const summaryBox = $("#checkoutSummary");
   const total = cart.reduce((a, x) => a + x.qty * price(x.price), 0);
   summaryBox.innerHTML = cart.map(x => `
@@ -360,5 +438,6 @@ window.addEventListener("scroll", () => {
 });
 
 // Initial boot
+initTableSession();
 loadMenu();
 renderCart();

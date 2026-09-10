@@ -73,6 +73,9 @@
         <button class="admin-tab-btn" data-tab="categories">
           <span>🗂️ Categories</span>
         </button>
+        <button class="admin-tab-btn" data-tab="tables">
+          <span>🪑 Table QRs</span>
+        </button>
       </div>
     </div>
   </header>
@@ -214,6 +217,23 @@
       </div>
 
       <div id="categoriesList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;"></div>
+    </section>
+
+    <!-- TAB 5: TABLE QR CODES GENERATOR -->
+    <section id="tab-tables" class="admin-view">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+        <div>
+          <h2 style="font-size:24px; margin-bottom:4px;">Table QR Codes & Stands</h2>
+          <p style="color:var(--text-muted); font-size:13px;">Print or download QR code tents for each dining table to prevent bogus dine-in orders</p>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <label style="font-size:13px; color:var(--text-muted);">Number of Tables:</label>
+          <input type="number" id="numTablesInput" value="12" min="1" max="50" style="width:70px; padding:6px 10px; text-align:center; background:var(--surface); color:#fff; border:1px solid var(--border); border-radius:8px;">
+          <button class="btn-primary" onclick="renderTableQRs()" style="padding:8px 16px;">Refresh QRs</button>
+        </div>
+      </div>
+
+      <div id="tablesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;"></div>
     </section>
 
   </main>
@@ -427,6 +447,7 @@
       if (tabId === "orders") renderOrders();
       if (tabId === "menu") renderMenuManager();
       if (tabId === "categories") renderCategoriesList();
+      if (tabId === "tables") renderTableQRs();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -881,6 +902,7 @@
             <div class="order-customer">${esc(o.customer_name)}</div>
             <div class="order-meta">
               ${o.phone ? `📞 ${esc(o.phone)} · ` : ``}<strong style="color:#ffffff;">${esc(o.order_type)}</strong>
+              ${o.table_number ? `<br><span style="display:inline-block; margin-top:5px; padding:3px 10px; background:rgba(233,253,53,0.15); border:1px solid rgba(233,253,53,0.45); border-radius:6px; color:var(--yellow); font-weight:700; font-size:12px;">🪑 Table #${esc(o.table_number)}</span>` : ""}
               ${o.address ? `<br>📍 ${esc(o.address)}` : ""}
               ${o.notes ? `<br><em style="color:#ffb8c0;">Notes: "${esc(o.notes)}"</em>` : ""}
             </div>
@@ -928,6 +950,39 @@
       } catch (err) {
         alert("Network error");
       }
+    }
+
+    // Table QR Codes Generator
+    function renderTableQRs() {
+      const grid = $("#tablesGrid");
+      if (!grid) return;
+      const count = Math.max(1, Math.min(50, Number($("#numTablesInput")?.value || 12)));
+      const baseUrl = window.location.origin;
+
+      let html = "";
+      for (let i = 1; i <= count; i++) {
+        const tableUrl = `${baseUrl}/?table=${i}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(tableUrl)}&color=0a0a0d&bgcolor=ffffff`;
+
+        html += `
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+            <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#ffb8c0; font-weight:700; margin-bottom:4px;">Cookie's Restaurant</div>
+            <h3 style="font-size:20px; color:var(--yellow); margin-bottom:12px;">TABLE #${i}</h3>
+            
+            <div style="background:#ffffff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:12px;">
+              <img src="${qrUrl}" alt="Table ${i} QR" style="width:150px; height:150px; display:block;">
+            </div>
+
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">Scan to auto-lock Dine-in for Table #${i}</p>
+
+            <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+              <a href="${tableUrl}" target="_blank" class="btn-outline" style="padding:6px 12px; font-size:12px; text-decoration:none;">Open Link ↗</a>
+              <a href="${qrUrl}" target="_blank" download="Table_${i}_QR.png" class="btn-primary" style="padding:6px 12px; font-size:12px; text-decoration:none;">Download QR ⬇</a>
+            </div>
+          </div>
+        `;
+      }
+      grid.innerHTML = html;
     }
 
     // Helper functions

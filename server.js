@@ -30,13 +30,14 @@ CREATE TABLE IF NOT EXISTS items(
 );
 CREATE TABLE IF NOT EXISTS orders(
  id INTEGER PRIMARY KEY AUTOINCREMENT, customer_name TEXT NOT NULL, phone TEXT NOT NULL,
- order_type TEXT NOT NULL, address TEXT DEFAULT '', notes TEXT DEFAULT '',
+ order_type TEXT NOT NULL, table_number TEXT DEFAULT '', address TEXT DEFAULT '', notes TEXT DEFAULT '',
  items_json TEXT NOT NULL, total REAL NOT NULL, status TEXT NOT NULL DEFAULT 'NEW',
  created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS admin_users(username TEXT PRIMARY KEY,password_hash TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sessions(sid TEXT PRIMARY KEY, sess TEXT NOT NULL, expired INTEGER NOT NULL);
 `);
+try{ db.exec("ALTER TABLE orders ADD COLUMN table_number TEXT DEFAULT ''"); }catch(e){}
 
 const seed=JSON.parse(fs.readFileSync(path.join(__dirname,"menu.json"),"utf8"));
 const catCount=db.prepare("SELECT COUNT(*) c FROM categories").get().c;
@@ -147,18 +148,20 @@ app.post("/api/orders",orderLimiter,(req,res)=>{
  const customer_name=clean(req.body.customer_name,100);
  const phone=clean(req.body.phone,40);
  const order_type=clean(req.body.order_type,30);
+ const table_number=clean(req.body.table_number,50);
  const address=clean(req.body.address,300);
  const notes=clean(req.body.notes,500);
  let items;
  try{items=Array.isArray(req.body.items)?req.body.items:[]}catch{items=[]}
  if(!customer_name||!items.length) return res.status(400).json({error:"Name and at least one item are required."});
+ if(order_type.toLowerCase().includes("dine") && !table_number) return res.status(400).json({error:"Please enter your Table Number for Dine-in orders."});
  const normalized=items.map(x=>({id:clean(x.id,100),name:clean(x.name,150),qty:Math.max(1,Math.min(99,Number(x.qty)||1)),price:priceNumber(x.price),image:clean(x.image,500)})).filter(x=>x.name&&x.price>0);
  if(!normalized.length)return res.status(400).json({error:"No valid items."});
  const total=normalized.reduce((a,x)=>a+x.qty*x.price,0);
  const created_at=new Date().toISOString();
- const info=db.prepare("INSERT INTO orders(customer_name,phone,order_type,address,notes,items_json,total,created_at) VALUES(?,?,?,?,?,?,?,?)")
-   .run(customer_name,phone,order_type,address,notes,JSON.stringify(normalized),total,created_at);
- const order={id:info.lastInsertRowid,customer_name,phone,order_type,address,notes,items:normalized,total,created_at};
+ const info=db.prepare("INSERT INTO orders(customer_name,phone,order_type,table_number,address,notes,items_json,total,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
+   .run(customer_name,phone,order_type,table_number,address,notes,JSON.stringify(normalized),total,created_at);
+ const order={id:info.lastInsertRowid,customer_name,phone,order_type,table_number,address,notes,items:normalized,total,created_at};
  sendMessenger(order).catch(e=>console.error("Messenger:",e.message));
  res.json({ok:true,orderId:info.lastInsertRowid});
 });
@@ -167,7 +170,7 @@ async function sendMessenger(order){
  const pageId=process.env.MESSENGER_PAGE_ID, token=process.env.MESSENGER_PAGE_ACCESS_TOKEN;
  if(!pageId||!token)return;
  const lines=order.items.map(i=>`• ${i.name} x${i.qty} = ₱${(i.qty*i.price).toFixed(2)}`).join("\n");
- const text=`🍪 NEW ORDER #${order.id}\nCustomer: ${order.customer_name}\nPhone: ${order.phone}\nType: ${order.order_type}\n${order.address?`Address: ${order.address}\n`:""}\n${lines}\n\nTOTAL: ₱${order.total.toFixed(2)}${order.notes?`\nNotes: ${order.notes}`:""}`;
+ const text=`🍪 NEW ORDER #${order.id}\nCustomer: ${order.customer_name}\nPhone: ${order.phone}\nType: ${order.order_type}\n${order.table_number?`Table: #${order.table_number}\n`:""}${order.address?`Address: ${order.address}\n`:""}\n${lines}\n\nTOTAL: ₱${order.total.toFixed(2)}${order.notes?`\nNotes: ${order.notes}`:""}`;
  const r=await fetch(`https://graph.facebook.com/v23.0/${encodeURIComponent(pageId)}/messages?access_token=${encodeURIComponent(token)}`,{
    method:"POST",headers:{"Content-Type":"application/json"},
    body:JSON.stringify({recipient:{id:pageId},message:{text}})
