@@ -20,11 +20,14 @@
       <form id="loginForm" style="text-align:left;">
         <div class="form-group">
           <label>Staff Username</label>
-          <input name="username" value="admin" required autocomplete="username">
+          <input name="username" id="loginUser" value="admin" required autocomplete="off">
         </div>
         <div class="form-group">
-          <label>Password</label>
-          <input name="password" type="password" placeholder="••••••••" required autocomplete="current-password">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="margin:0;">Password</label>
+            <button type="button" id="toggleLoginPw" style="background:none; border:none; color:var(--yellow); font-size:12px; cursor:pointer; padding:0;">👁️ Show Password</button>
+          </div>
+          <input name="password" id="loginPass" type="password" placeholder="••••••••" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:8px;">
           Login to Dashboard →
@@ -405,12 +408,27 @@
       }
     }
 
+    // Toggle Show/Hide Password
+    const togglePw = $("#toggleLoginPw");
+    if (togglePw) {
+      togglePw.onclick = () => {
+        const passInp = $("#loginPass");
+        const isPw = passInp.type === "password";
+        passInp.type = isPw ? "text" : "password";
+        togglePw.textContent = isPw ? "🙈 Hide Password" : "👁️ Show Password";
+      };
+    }
+
     // Login Form Submit
     $("#loginForm").onsubmit = async e => {
       e.preventDefault();
-      const payload = Object.fromEntries(new FormData(e.target));
+      const raw = Object.fromEntries(new FormData(e.target));
+      const payload = {
+        username: String(raw.username || "").trim(),
+        password: String(raw.password || "").trim()
+      };
       const msg = $("#loginMsg");
-      msg.textContent = "Verifying…";
+      msg.textContent = "Verifying credentials…";
 
       try {
         const res = await fetch("/api/login", {
@@ -422,6 +440,7 @@
         if (res.ok) {
           msg.textContent = "";
           $("#loginModal").classList.remove("show");
+          toast("Login successful! Welcome.");
           await loadAllData();
         } else {
           msg.textContent = data.error || "Invalid username or password";
