@@ -219,21 +219,24 @@
       <div id="categoriesList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;"></div>
     </section>
 
-    <!-- TAB 5: TABLE QR CODES GENERATOR -->
+    <!-- TAB 5: TABLE ACTIVE SESSIONS & QR CODES -->
     <section id="tab-tables" class="admin-view">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
         <div>
-          <h2 style="font-size:24px; margin-bottom:4px;">Table QR Codes & Stands</h2>
-          <p style="color:var(--text-muted); font-size:13px;">Print or download QR code tents for each dining table to prevent bogus dine-in orders</p>
+          <h2 style="font-size:24px; margin-bottom:4px;">Table Sessions & QR Management</h2>
+          <p style="color:var(--text-muted); font-size:13px;">Activate tables when guests sit down. End session when they leave to immediately lock the table and block unauthorized orders.</p>
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
-          <label style="font-size:13px; color:var(--text-muted);">Number of Tables:</label>
-          <input type="number" id="numTablesInput" value="12" min="1" max="50" style="width:70px; padding:6px 10px; text-align:center; background:var(--surface); color:#fff; border:1px solid var(--border); border-radius:8px;">
-          <button class="btn-primary" onclick="renderTableQRs()" style="padding:8px 16px;">Refresh QRs</button>
+          <button class="btn-primary" onclick="addNewTablePrompt()" style="padding:8px 16px;">
+            ➕ Add Table
+          </button>
+          <button class="btn-outline" onclick="renderTableQRs()" style="padding:8px 16px;">
+            🔄 Refresh
+          </button>
         </div>
       </div>
 
-      <div id="tablesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:20px;"></div>
+      <div id="tablesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(290px, 1fr)); gap:20px;"></div>
     </section>
 
   </main>
@@ -924,11 +927,18 @@
 
           <div style="margin-top:8px;">
             <label style="font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; display:block; margin-bottom:4px;">Update Status:</label>
-            <select onchange="updateOrderStatus(${o.id}, this.value)">
-              ${["NEW", "CONFIRMED", "PREPARING", "READY", "COMPLETED", "CANCELLED"].map(s => `
-                <option value="${s}" ${s === o.status ? "selected" : ""}>${s}</option>
-              `).join("")}
-            </select>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select style="flex:1;" onchange="updateOrderStatus(${o.id}, this.value)">
+                ${["NEW", "CONFIRMED", "PREPARING", "READY", "COMPLETED", "CANCELLED"].map(s => `
+                  <option value="${s}" ${s === o.status ? "selected" : ""}>${s}</option>
+                `).join("")}
+              </select>
+              ${o.table_number ? `
+                <button type="button" class="btn-icon danger" onclick="closeTableSession('${esc(o.table_number)}')" title="End Table #${esc(o.table_number)} Session" style="padding:7px 10px; font-size:11px; white-space:nowrap;">
+                  🛑 End T-${esc(o.table_number)}
+                </button>
+              ` : ""}
+            </div>
           </div>
         </div>
       `).join("");
@@ -952,37 +962,185 @@
       }
     }
 
-    // Table QR Codes Generator
-    function renderTableQRs() {
+    // Table Sessions & Dynamic QR Management
+    let tablesData = [];
+
+    async function renderTableQRs() {
       const grid = $("#tablesGrid");
       if (!grid) return;
-      const count = Math.max(1, Math.min(50, Number($("#numTablesInput")?.value || 12)));
-      const baseUrl = window.location.origin;
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">Loading tables…</div>`;
 
-      let html = "";
-      for (let i = 1; i <= count; i++) {
-        const tableUrl = `${baseUrl}/?table=${i}`;
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(tableUrl)}&color=0a0a0d&bgcolor=ffffff`;
+      try {
+        const res = await fetch("/api/admin/tables");
+        if (!res.ok) {
+          grid.innerHTML = `<div style="grid-column:1/-1; color:#ef4444; text-align:center;">Failed to load tables.</div>`;
+          return;
+        }
+        tablesData = await res.json();
+        const baseUrl = window.location.origin;
 
-        html += `
-          <div style="background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
-            <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#ffb8c0; font-weight:700; margin-bottom:4px;">Cookie's Restaurant</div>
-            <h3 style="font-size:20px; color:var(--yellow); margin-bottom:12px;">TABLE #${i}</h3>
-            
-            <div style="background:#ffffff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:12px;">
-              <img src="${qrUrl}" alt="Table ${i} QR" style="width:150px; height:150px; display:block;">
+        if (!tablesData.length) {
+          grid.innerHTML = `
+            <div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">
+              <p>No tables configured yet.</p>
+              <button class="btn-primary" onclick="addNewTablePrompt()" style="margin-top:10px;">➕ Add First Table</button>
             </div>
+          `;
+          return;
+        }
 
-            <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">Scan to auto-lock Dine-in for Table #${i}</p>
+        grid.innerHTML = tablesData.map(t => {
+          const isActive = !!t.is_active;
+          const tableUrl = isActive ? `${baseUrl}/?table=${encodeURIComponent(t.table_number)}&s=${encodeURIComponent(t.session_token)}` : `${baseUrl}/?table=${encodeURIComponent(t.table_number)}`;
+          const qrUrl = isActive ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(tableUrl)}&color=0a0a0d&bgcolor=ffffff` : "";
 
-            <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-              <a href="${tableUrl}" target="_blank" class="btn-outline" style="padding:6px 12px; font-size:12px; text-decoration:none;">Open Link ↗</a>
-              <a href="${qrUrl}" target="_blank" download="Table_${i}_QR.png" class="btn-primary" style="padding:6px 12px; font-size:12px; text-decoration:none;">Download QR ⬇</a>
+          return `
+            <div style="background:var(--surface); border:1px solid ${isActive ? 'rgba(233,253,53,0.4)' : 'var(--border)'}; border-radius:18px; padding:20px; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.3); position:relative;">
+              <button onclick="deleteTable('${esc(t.table_number)}')" style="position:absolute; top:14px; right:14px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px;" title="Delete Table">🗑️</button>
+              
+              <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:11px; padding:3px 10px; border-radius:20px; font-weight:700; ${isActive ? 'background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3);' : 'background:rgba(255,255,255,0.06); color:var(--text-muted); border:1px solid rgba(255,255,255,0.1);'}">
+                  ${isActive ? '🟢 ACTIVE SESSION' : '⚪ CLOSED / VACANT'}
+                </span>
+              </div>
+
+              <h3 style="font-size:22px; color:${isActive ? 'var(--yellow)' : '#ffffff'}; margin-bottom:12px;">TABLE #${esc(t.table_number)}</h3>
+
+              ${isActive ? `
+                <div style="background:#ffffff; padding:10px; border-radius:12px; display:inline-block; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+                  <img src="${qrUrl}" alt="Table ${esc(t.table_number)} QR" style="width:150px; height:150px; display:block;">
+                </div>
+                <div style="background:#0a0a0d; border:1px solid var(--border); border-radius:10px; padding:8px 12px; margin-bottom:14px;">
+                  <div style="font-size:11px; color:var(--text-muted);">PASSCODE</div>
+                  <strong style="font-size:18px; letter-spacing:2px; color:var(--yellow);">${esc(t.passcode || '----')}</strong>
+                  ${t.active_orders ? `<div style="font-size:11px; color:#4ade80; margin-top:2px;">🔔 ${t.active_orders} active kitchen order(s)</div>` : `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">No pending orders</div>`}
+                </div>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                  <button onclick="printTableSlip('${esc(t.table_number)}', '${esc(t.session_token)}', '${esc(t.passcode)}')" class="btn-outline" style="padding:6px 12px; font-size:12px;">🖨️ Print Slip</button>
+                  <button onclick="closeTableSession('${esc(t.table_number)}')" class="btn-icon danger" style="padding:6px 12px; font-size:12px;">🛑 End Session</button>
+                </div>
+              ` : `
+                <div style="padding:28px 10px; border:1px dashed rgba(255,255,255,0.15); border-radius:14px; margin-bottom:16px; color:var(--text-muted); font-size:13px;">
+                  <div style="font-size:28px; margin-bottom:8px;">🔒</div>
+                  <div>Table is currently locked.</div>
+                  <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">No one can order from this table.</div>
+                </div>
+                <button onclick="openTableSession('${esc(t.table_number)}')" class="btn-primary" style="width:100%; justify-content:center; padding:10px;">
+                  🟢 Open Table Session
+                </button>
+              `}
             </div>
-          </div>
-        `;
+          `;
+        }).join("");
+      } catch (err) {
+        grid.innerHTML = `<div style="grid-column:1/-1; color:#ef4444; text-align:center;">Error connecting to server.</div>`;
       }
-      grid.innerHTML = html;
+    }
+
+    async function openTableSession(tableNumber) {
+      try {
+        const res = await fetch(`/api/admin/tables/${encodeURIComponent(tableNumber)}/open`, { method: "POST" });
+        const data = await res.json();
+        if (res.ok) {
+          toast(`Table #${tableNumber} is now ACTIVE!`);
+          await renderTableQRs();
+        } else {
+          alert(data.error || "Failed to open table");
+        }
+      } catch (e) {
+        alert("Network error");
+      }
+    }
+
+    async function closeTableSession(tableNumber) {
+      if (!confirm(`Are you sure you want to END the dining session for Table #${tableNumber}? This will immediately prevent new orders from this table.`)) return;
+      try {
+        const res = await fetch(`/api/admin/tables/${encodeURIComponent(tableNumber)}/close`, { method: "POST" });
+        if (res.ok) {
+          toast(`Table #${tableNumber} session ENDED & locked!`);
+          await Promise.all([renderTableQRs(), loadOrders()]);
+        } else {
+          alert("Failed to close table");
+        }
+      } catch (e) {
+        alert("Network error");
+      }
+    }
+
+    async function addNewTablePrompt() {
+      const tableNum = prompt("Enter new Table Number or Name (e.g. 16, Patio 1, VIP):");
+      if (!tableNum || !tableNum.trim()) return;
+      try {
+        const res = await fetch("/api/admin/tables", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table_number: tableNum.trim() })
+        });
+        const d = await res.json();
+        if (res.ok) {
+          toast(`Added Table #${tableNum}!`);
+          await renderTableQRs();
+        } else {
+          alert(d.error || "Failed to add table");
+        }
+      } catch (e) {
+        alert("Network error");
+      }
+    }
+
+    async function deleteTable(tableNumber) {
+      if (!confirm(`Delete Table #${tableNumber} entirely from system?`)) return;
+      try {
+        const res = await fetch(`/api/admin/tables/${encodeURIComponent(tableNumber)}`, { method: "DELETE" });
+        if (res.ok) {
+          toast(`Table #${tableNumber} removed.`);
+          await renderTableQRs();
+        }
+      } catch (e) {
+        alert("Network error");
+      }
+    }
+
+    function printTableSlip(tableNumber, token, passcode) {
+      const baseUrl = window.location.origin;
+      const tableUrl = `${baseUrl}/?table=${encodeURIComponent(tableNumber)}&s=${encodeURIComponent(token)}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(tableUrl)}&color=0a0a0d&bgcolor=ffffff`;
+
+      const win = window.open("", "_blank", "width=480,height=640");
+      win.document.write(\`
+        <!doctype html>
+        <html>
+        <head>
+          <title>Table #\${tableNumber} QR Slip</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align:center; padding:30px; background:#fff; color:#111; }
+            .card { border:2px dashed #333; padding:24px; border-radius:16px; max-width:320px; margin:0 auto; }
+            h1 { margin:4px 0; font-size:24px; color:#932635; }
+            .tbl { font-size:28px; font-weight:900; margin:10px 0; }
+            .code { font-size:20px; letter-spacing:3px; font-weight:800; background:#f4f4f5; padding:6px 12px; border-radius:8px; display:inline-block; margin:8px 0; }
+            img { width:180px; height:180px; margin:12px auto; display:block; }
+            p { font-size:13px; color:#555; margin:6px 0; }
+            @media print { button { display:none; } body { padding:0; } }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <h1>Cookie's</h1>
+            <p>Restaurant & Coffee Shop</p>
+            <hr style="border:none; border-top:1px solid #ddd; margin:10px 0;">
+            <div class="tbl">TABLE #\${tableNumber}</div>
+            <p>Scan with your camera to order:</p>
+            <img src="\${qrUrl}" alt="QR">
+            <div>Table Passcode:</div>
+            <div class="code">\${passcode}</div>
+            <p style="font-size:11px; color:#888; margin-top:12px;">This QR is exclusively active for your dining session.</p>
+          </div>
+          <br>
+          <button onclick="window.print()" style="padding:10px 20px; font-size:14px; cursor:pointer; background:#932635; color:#fff; border:none; border-radius:8px;">Print Slip 🖨️</button>
+        </body>
+        </html>
+      \`);
+      win.document.close();
     }
 
     // Helper functions

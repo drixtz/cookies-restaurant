@@ -258,22 +258,55 @@ $("#overlay").onclick = closeCart;
 
 // Dine-in Table Session & Order Type logic
 let currentTable = sessionStorage.getItem("cookies_table") || "";
+let currentSessionToken = sessionStorage.getItem("cookies_session_token") || "";
 
-function initTableSession() {
+async function initTableSession() {
   const params = new URLSearchParams(window.location.search);
   const tableParam = params.get("table") || params.get("t");
+  const tokenParam = params.get("session") || params.get("token") || params.get("s");
+
   if (tableParam) {
     currentTable = tableParam.trim();
+    if (tokenParam) currentSessionToken = tokenParam.trim();
     sessionStorage.setItem("cookies_table", currentTable);
+    if (currentSessionToken) sessionStorage.setItem("cookies_session_token", currentSessionToken);
   }
 
-  const banner = $("#tableIndicatorBanner");
-  const bannerNum = $("#tableBannerNumber");
-  if (currentTable && banner && bannerNum) {
-    bannerNum.textContent = currentTable.toLowerCase().startsWith("table") ? currentTable : `Table #${currentTable}`;
-    banner.style.display = "flex";
-  } else if (banner) {
-    banner.style.display = "none";
+  if (currentTable) {
+    try {
+      const res = await fetch(`/api/tables/validate?table=${encodeURIComponent(currentTable)}&token=${encodeURIComponent(currentSessionToken)}`);
+      const val = await res.json();
+      
+      const banner = $("#tableIndicatorBanner");
+      const bannerNum = $("#tableBannerNumber");
+      const sessionTag = $("#tableSessionTag");
+
+      if (val.ok && val.active) {
+        if (val.session_token) {
+          currentSessionToken = val.session_token;
+          sessionStorage.setItem("cookies_session_token", currentSessionToken);
+        }
+        if (banner && bannerNum) {
+          bannerNum.textContent = `Table #${currentTable}`;
+          if (sessionTag) sessionTag.textContent = "Active Dining Session Verified";
+          banner.style.display = "flex";
+          banner.style.borderColor = "rgba(147,38,53,0.6)";
+        }
+      } else {
+        // Inactive or ended
+        if (banner && bannerNum) {
+          bannerNum.textContent = `Table #${currentTable} (Inactive)`;
+          if (sessionTag) sessionTag.textContent = "Table Session Ended";
+          banner.style.display = "flex";
+          banner.style.borderColor = "#ef4444";
+        }
+        if (tableParam) {
+          toast(val.error || `Table #${currentTable} is closed.`);
+        }
+      }
+    } catch (e) {
+      console.warn("Table validation check error:", e);
+    }
   }
 }
 
@@ -281,12 +314,16 @@ const clearTableBtn = $("#clearTableBtn");
 if (clearTableBtn) {
   clearTableBtn.onclick = () => {
     currentTable = "";
+    currentSessionToken = "";
     sessionStorage.removeItem("cookies_table");
+    sessionStorage.removeItem("cookies_session_token");
     const banner = $("#tableIndicatorBanner");
     if (banner) banner.style.display = "none";
     const tableInput = $("#tableNumberInput");
     if (tableInput) tableInput.value = "";
-    toast("Table selection cleared.");
+    const tokenInput = $("#sessionTokenInput");
+    if (tokenInput) tokenInput.value = "";
+    toast("Table session cleared.");
   };
 }
 
@@ -294,6 +331,8 @@ function updateOrderTypeFields() {
   const typeSelect = $("#orderTypeSelect");
   const tableGroup = $("#tableNumberGroup");
   const tableInput = $("#tableNumberInput");
+  const tokenInput = $("#sessionTokenInput");
+  const passcodeGroup = $("#passcodeGroup");
   const addressGroup = $("#addressGroup");
   const addressInput = $("#addressInput");
 
@@ -306,6 +345,12 @@ function updateOrderTypeFields() {
       tableInput.required = true;
       if (currentTable && !tableInput.value) tableInput.value = currentTable;
     }
+    if (tokenInput) {
+      tokenInput.value = currentSessionToken || "";
+    }
+    if (passcodeGroup) {
+      passcodeGroup.style.display = currentSessionToken ? "none" : "block";
+    }
     if (addressGroup) addressGroup.style.display = "none";
     if (addressInput) {
       addressInput.required = false;
@@ -314,12 +359,14 @@ function updateOrderTypeFields() {
   } else if (val === "Delivery") {
     if (tableGroup) tableGroup.style.display = "none";
     if (tableInput) tableInput.required = false;
+    if (passcodeGroup) passcodeGroup.style.display = "none";
     if (addressGroup) addressGroup.style.display = "block";
     if (addressInput) addressInput.required = true;
   } else {
     // Takeout
     if (tableGroup) tableGroup.style.display = "none";
     if (tableInput) tableInput.required = false;
+    if (passcodeGroup) passcodeGroup.style.display = "none";
     if (addressGroup) addressGroup.style.display = "none";
     if (addressInput) {
       addressInput.required = false;

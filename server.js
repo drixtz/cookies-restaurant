@@ -36,8 +36,24 @@ CREATE TABLE IF NOT EXISTS orders(
 );
 CREATE TABLE IF NOT EXISTS admin_users(username TEXT PRIMARY KEY,password_hash TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sessions(sid TEXT PRIMARY KEY, sess TEXT NOT NULL, expired INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS table_sessions(
+  table_number TEXT PRIMARY KEY,
+  is_active INTEGER NOT NULL DEFAULT 0,
+  session_token TEXT DEFAULT '',
+  passcode TEXT DEFAULT '',
+  opened_at TEXT DEFAULT '',
+  closed_at TEXT DEFAULT ''
+);
 `);
 try{ db.exec("ALTER TABLE orders ADD COLUMN table_number TEXT DEFAULT ''"); }catch(e){}
+try{ db.exec("ALTER TABLE orders ADD COLUMN session_token TEXT DEFAULT ''"); }catch(e){}
+try{ db.exec("ALTER TABLE table_sessions ADD COLUMN passcode TEXT DEFAULT ''"); }catch(e){}
+
+const tblCount = db.prepare("SELECT COUNT(*) c FROM table_sessions").get().c;
+if(!tblCount){
+  const ins = db.prepare("INSERT INTO table_sessions(table_number, is_active, session_token, passcode) VALUES(?, 0, '', '')");
+  for(let i=1; i<=15; i++) ins.run(String(i));
+}
 
 const seed=JSON.parse(fs.readFileSync(path.join(__dirname,"menu.json"),"utf8"));
 const catCount=db.prepare("SELECT COUNT(*) c FROM categories").get().c;
@@ -154,16 +170,31 @@ app.post("/api/orders",orderLimiter,(req,res)=>{
  let items;
  try{items=Array.isArray(req.body.items)?req.body.items:[]}catch{items=[]}
  if(!customer_name||!items.length) return res.status(400).json({error:"Name and at least one item are required."});
- if(order_type.toLowerCase().includes("dine") && !table_number) return res.status(400).json({error:"Please enter your Table Number for Dine-in orders."});
- const normalized=items.map(x=>({id:clean(x.id,100),name:clean(x.name,150),qty:Math.max(1,Math.min(99,Number(x.qty)||1)),price:priceNumber(x.price),image:clean(x.image,500)})).filter(x=>x.name&&x.price>0);
- if(!normalized.length)return res.status(400).json({error:"No valid items."});
- const total=normalized.reduce((a,x)=>a+x.qty*x.price,0);
- const created_at=new Date().toISOString();
- const info=db.prepare("INSERT INTO orders(customer_name,phone,order_type,table_number,address,notes,items_json,total,created_at) VALUES(?,?,?,?,?,?,?,?,?)")
-   .run(customer_name,phone,order_type,table_number,address,notes,JSON.stringify(normalized),total,created_at);
- const order={id:info.lastInsertRowid,customer_name,phone,order_type,table_number,address,notes,items:normalized,total,created_at};
- sendMessenger(order).catch(e=>console.error("Messenger:",e.message));
- res.json({ok:true,orderId:info.lastInsertRowid});
+  let session_token=clean(req.body.session_token,100);
+  const passcode=clean(req.body.passcode,20);
+  if(order_type.toLowerCase().includes("dine")){
+    if(!table_number) return res.status(400).json({error:"Please enter your Table Number for Dine-in orders."});
+    const tbl=db.prepare("SELECT * FROM table_sessions WHERE table_number=?").get(table_number);
+    if(!tbl||!tbl.is_active){
+      return res.status(400).json({error:`Table #${table_number} is currently CLOSED. Please ask staff to open your table session.`});
+    }
+    const tokenMatch=(session_token && tbl.session_token && session_token===tbl.session_token);
+    const codeMatch=(passcode && tbl.passcode && passcode===tbl.passcode);
+    if(!tokenMatch && !codeMatch){
+      return res.status(400).json({error:`Dining session for Table #${table_number} has expired or is invalid. Please scan the active QR code or ask staff for table passcode.`});
+    }
+    if(!session_token && tbl.session_token) session_token=tbl.session_token;
+  }
+
+  const normalized=items.map(x=>({id:clean(x.id,100),name:clean(x.name,150),qty:Math.max(1,Math.min(99,Number(x.qty)||1)),price:priceNumber(x.price),image:clean(x.image,500)})).filter(x=>x.name&&x.price>0);
+  if(!normalized.length)return res.status(400).json({error:"No valid items."});
+  const total=normalized.reduce((a,x)=>a+x.qty*x.price,0);
+  const created_at=new Date().toISOString();
+  const info=db.prepare("INSERT INTO orders(customer_name,phone,order_type,table_number,session_token,address,notes,items_json,total,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)")
+    .run(customer_name,phone,order_type,table_number,session_token,address,notes,JSON.stringify(normalized),total,created_at);
+  const order={id:info.lastInsertRowid,customer_name,phone,order_type,table_number,session_token,address,notes,items:normalized,total,created_at};
+  sendMessenger(order).catch(e=>console.error("Messenger:",e.message));
+  res.json({ok:true,orderId:info.lastInsertRowid});
 });
 
 async function sendMessenger(order){
@@ -224,6 +255,70 @@ app.delete("/api/admin/items/:id",auth,(req,res)=>{db.prepare("DELETE FROM items
 app.post("/api/admin/upload",auth,upload.single("image"),(req,res)=>{
  if(!req.file)return res.status(400).json({error:"No image uploaded"});
  res.json({ok:true,url:"/uploads/"+req.file.filename});
+});
+
+// Table Session Validation & Management
+app.get("/api/tables/validate",(req,res)=>{
+ const t=clean(req.query.table||req.query.t,50);
+ const token=clean(req.query.token||req.query.s,100);
+ if(!t) return res.json({ok:false,error:"No table specified"});
+ const row=db.prepare("SELECT * FROM table_sessions WHERE table_number=?").get(t);
+ if(!row) return res.json({ok:false,active:false,table:t,error:`Table #${t} not found.`});
+ if(!row.is_active){
+  return res.json({ok:false,active:false,table:t,error:`Table #${t} is currently CLOSED. Please ask staff to open your table.`});
+ }
+ const tokenMatches=Boolean(token && row.session_token && token===row.session_token);
+ res.json({
+  ok:true,
+  active:true,
+  table:t,
+  tokenMatches,
+  passcodeRequired:!tokenMatches,
+  session_token:tokenMatches?row.session_token:"",
+  opened_at:row.opened_at
+ });
+});
+
+app.get("/api/admin/tables",auth,(req,res)=>{
+ const rows=db.prepare("SELECT * FROM table_sessions ORDER BY CAST(table_number AS INTEGER), table_number").all();
+ const orderCounts=db.prepare("SELECT table_number, COUNT(*) c FROM orders WHERE status NOT IN ('COMPLETED','CANCELLED') AND table_number != '' GROUP BY table_number").all();
+ const map={};
+ for(const oc of orderCounts) map[oc.table_number]=oc.c;
+ res.json(rows.map(r=>({...r,active_orders:map[r.table_number]||0})));
+});
+
+app.post("/api/admin/tables/:table/open",auth,(req,res)=>{
+ const t=clean(req.params.table,50);
+ const passcode=Math.floor(1000+Math.random()*9000).toString();
+ const token="ck-"+t+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,6);
+ const now=new Date().toISOString();
+ db.prepare("INSERT INTO table_sessions(table_number, is_active, session_token, passcode, opened_at) VALUES(?,1,?,?,?) ON CONFLICT(table_number) DO UPDATE SET is_active=1, session_token=?, passcode=?, opened_at=?")
+   .run(t,token,passcode,now,token,passcode,now);
+ res.json({ok:true,table:t,session_token:token,passcode});
+});
+
+app.post("/api/admin/tables/:table/close",auth,(req,res)=>{
+ const t=clean(req.params.table,50);
+ const now=new Date().toISOString();
+ db.prepare("UPDATE table_sessions SET is_active=0, session_token='', passcode='', closed_at=? WHERE table_number=?").run(now,t);
+ res.json({ok:true,table:t});
+});
+
+app.post("/api/admin/tables",auth,(req,res)=>{
+ const t=clean(req.body.table_number,50);
+ if(!t) return res.status(400).json({error:"Table number is required"});
+ try{
+  db.prepare("INSERT INTO table_sessions(table_number, is_active, session_token, passcode) VALUES(?,0,'','')").run(t);
+  res.json({ok:true,table:t});
+ }catch(e){
+  res.status(400).json({error:"Table already exists"});
+ }
+});
+
+app.delete("/api/admin/tables/:table",auth,(req,res)=>{
+ const t=clean(req.params.table,50);
+ db.prepare("DELETE FROM table_sessions WHERE table_number=?").run(t);
+ res.json({ok:true});
 });
 
 app.use("/uploads", express.static(UPLOAD_DIR)); // serve persistent uploads
