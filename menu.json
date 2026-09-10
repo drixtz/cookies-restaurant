@@ -1,0 +1,929 @@
+{
+  "categories": [
+    {
+      "id": "breakfast",
+      "name": "BREAKFAST",
+      "image": "/images/placeholder.svg",
+      "note": "*Eggs can be prepared Over Easy, Sunny Side Up, Scrambled, or Boiled",
+      "items": [
+        {
+          "id": "american-breakfast-breakfast",
+          "name": "★ AMERICAN BREAKFAST",
+          "description": "Two eggs, two slices of bacon, hashbrowns, and malunggay pandesal.",
+          "price": "P259",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "hungarian-sausage-breakfast",
+          "name": "HUNGARIAN SAUSAGE",
+          "description": "Fried Rice, two eggs and Malunggay Pandesal.",
+          "price": "P279",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "waffle-breakfast",
+          "name": "WAFFLE",
+          "description": "A golden, crisp-on-the-outside waffle with a light, fluffy center, served warm and ready for your favorite topping. ~ Toppings include marmalade, chocolate, or classic maple syrup. ~",
+          "price": "P139",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "french-toast-breakfast",
+          "name": "FRENCH TOAST",
+          "description": "Two slices served with sweet, tangy marmalade for a delightful morning treat.",
+          "price": "P129",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "ilocano-longganisa-omelette-breakfast",
+          "name": "ILOCANO LONGGANISA OMELETTE",
+          "description": "Two egg logganisa omelette, onions & tomatos. ~ Served with Fried Rice & Malunggay Pandesal ~",
+          "price": "P289",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "vegetable-omelette-breakfast",
+          "name": "VEGETABLE OMELETTE",
+          "description": "Two egg omelette, sweet red onion, ripe tomato, and crisp bell pepper. ~ Served with Fried Rice & Malunggay Pandesal ~",
+          "price": "P239",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "cheese-omelette-breakfast",
+          "name": "CHEESE OMELETTE",
+          "description": "Two egg omelette overflowing with rich melted mozzarella cheese. ~ Served with Fried Rice & Malunggay Pandesal ~",
+          "price": "P249",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "breakfast-usda-prime-ribeye-steak-breakfast",
+          "name": "BREAKFAST USDA PRIME RIBEYE STEAK",
+          "description": "An 8oz generous portion grilled to perfection, served with two eggs, hashbrown, and malunggay pandesal, for a hearty, delicious meal.",
+          "price": "P1350",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "soup",
+      "name": "SOUP",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "cream-of-tomato-soup-soup",
+          "name": "CREAM OF TOMATO SOUP",
+          "description": "A smooth, comforting cream soup with basil topped with crunchy croutons.",
+          "price": "P240",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "salad",
+      "name": "SALAD",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "garden-fresh-salad-salad",
+          "name": "GARDEN FRESH SALAD",
+          "description": "Crisp romaine, carrots, red onion, and cherry tomatoes tossed in vinaigrette, finished with crunchy croutons and sweet grapes.",
+          "price": "P325",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "sandwiches",
+      "name": "SANDWICHES",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "tuna-sandwich-sandwiches",
+          "name": "TUNA SANDWICH",
+          "description": "Tuna salad folded in a creamy, savory dressing and served on crisp toasted bread. ~ Served with a side of Potato Salad ~",
+          "price": "P299",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "grilled-tuna-melt-sandwiches",
+          "name": "GRILLED TUNA MELT",
+          "description": "Savory tuna, crisp veggies, and a gentle kick of spice. Creamy with cheddar, and perfectly grilled. ~ Served with a side of Potato Salad ~",
+          "price": "P340",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "new-grilled-cheese-sandwich-sandwiches",
+          "name": "New GRILLED CHEESE SANDWICH",
+          "description": "Golden, butter-grilled bread layered with melted cheese, toasted until crisp on the outside and irresistibly gooey inside.",
+          "price": "P490",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "platters",
+      "name": "PLATTERS",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "table-for-friends-platters",
+          "name": "TABLE FOR FRIENDS",
+          "description": "1 PIZZA OF YOUR CHOICE, 1 PLATE OF BUFFALO CHICKEN WINGS, 1 CHOICE OF PASTA (POMODORO / AGLIO E OLIO), AND 2 SIDES OF FRIES",
+          "price": "P1195",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "house-favorites-platters",
+          "name": "★HOUSE FAVORITES",
+          "description": "1 PIZZA OF YOUR CHOICE, 1 GRILLED TUNA MELT, 1 SIDE OF JALAPENO POPPERS, 1 SIDE OF POTATO SALAD, AND 1 SIDE OF ONION RINGS",
+          "price": "P1225",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "slider-feast-platters",
+          "name": "SLIDER FEAST",
+          "description": "1 SIGNATURE COOKIE'S SLIDER, 1 JUICY CHICKEN SLIDER, 1 SAVORY PULLED PORK SLIDER, AND 2 GENEROUS SIDES OF GOLDEN FRIES",
+          "price": "P1150",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "italiano-medley-platters",
+          "name": "ITALIANO MEDLEY",
+          "description": "1 PIZZA OF YOUR CHOICE, 1 PLATE OF CRISPY CHICKEN WINGS, 2 PASTA DISHES, 1 POMODORO AND THE OTHER (PESTO / ALIGUE)",
+          "price": "P1350",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "bounty-of-the-barn-platters",
+          "name": "BOUNTY OF THE BARN",
+          "description": "OUR CHEF'S SPECIAL✔ 4 PIECES OF SUCCULENT WHISKY GLAZED BBQ PORK RIBS, 1 FRIED CHICKEN PLATTER, AND 1 T-BONE STEAK COMPLEMENTED WITH A SIDE OF RUSTIC POTATOES & COLESLAW.",
+          "price": "P3670",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "burgers",
+      "name": "BURGERS",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "cookie-s-burger-burgers",
+          "name": "★ COOKIE'S BURGER",
+          "description": "Juicy lb beef patty with crisp lettuce, fresh tomato, a splash of jalapeño heat, dill pickles, sweet caramelized onions, and Aurora's Signature Sauce for a bold, satisfying bite. ~ Add Cheese for P70, Served with a side of Fries ~",
+          "price": "P355",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "chicken-burger-burgers",
+          "name": "CHICKEN BURGER",
+          "description": "Buttermilk fried chicken topped with romaine lettuce, caramelized onion, tomato, pickles, and garlic aioli on a toasted bun. ~ Served with a side of Fries ~",
+          "price": "P385",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "pulled-pork-sliders-burgers",
+          "name": "PULLED PORK SLIDERS",
+          "description": "Two sliders layered with tender, savory pork and crisp coleslaw tucked inside each bun. ~ Served with a side of Potato Salad ~",
+          "price": "P325",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "pasta",
+      "name": "PASTA",
+      "image": "/images/placeholder.svg",
+      "note": "Served with a Toasted Garlic Roll",
+      "items": [
+        {
+          "id": "pomodoro-pasta",
+          "name": "POMODORO",
+          "description": "Pasta with fresh tomato sauce simmered with garlic, basil, and olive oil. - With Chicken - P345 With Shrimp - P490 ~",
+          "price": "P299",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "aligue-pasta",
+          "name": "ALIGUE",
+          "description": "Buttery crab fat sauce, with garlic, chili, and a hint of citrus brightness. ~ A divine blend of Filipino & Italian cuisines ~",
+          "price": "P545",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "aglio-e-olio-pasta",
+          "name": "AGLIO E OLIO",
+          "description": "A bright, garlic-forward pasta tossed in olive oil with chili flakes, fresh tomato, lemon, parsley, finished with a touch of parmesan. ~With Shrimp - P595 ~",
+          "price": "P395",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "creamy-chicken-pesto-pasta",
+          "name": "CREAMY CHICKEN PESTO",
+          "description": "Tender chicken in a creamy basil pesto sauce with a gentle touch of parmesan.",
+          "price": "P485",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "kids-spaghetti-pasta",
+          "name": "KIDS SPAGHETTI",
+          "description": "Filipino-style sweet spaghetti in a rich, meaty sauce.",
+          "price": "P159",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "pizza",
+      "name": "PIZZA",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "margherita-pizza",
+          "name": "MARGHERITA",
+          "description": "Fresh tomato sauce, creamy mozzarella cheese, and basil.",
+          "price": "P285",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "hawaiian-pizza",
+          "name": "HAWAIIAN",
+          "description": "A beloved classic & a guaranteed popular choice.",
+          "price": "P295",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "pepperoni-pizza",
+          "name": "PEPPERONI",
+          "description": "Hard to go wrong with creamy mozzarella cheese, and crispy pepperoni.",
+          "price": "P285",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "cheese-pizza",
+          "name": "CHEESE",
+          "description": "Mozzarella cheese pizza, timelessly delicious.",
+          "price": "P255",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "chicken",
+      "name": "CHICKEN",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "buttermilk-chicken-chicken",
+          "name": "BUTTERMILK CHICKEN",
+          "description": "Crunchy buttermilk-marinated chicken, fried golden and served with crisp green beans, sweet cherry tomatoes, and creamy mashed potatoes on the side.",
+          "price": "P590",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "buffalo-chicken-wings-chicken",
+          "name": "BUFFALO CHICKEN WINGS",
+          "description": "Five zesty buffalo chicken wings tossed with smoky paprika and a hint of calamansi.",
+          "price": "P350",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "fried-chicken-platter-chicken",
+          "name": "★FRIED CHICKEN PLATTER",
+          "description": "Five pieces of golden, crispy fried chicken, juicy on the inside and perfectly seasoned.",
+          "price": "P650",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "pork",
+      "name": "PORK / BBQ",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "new-whisky-glazed-bbq-pork-ribs-pork",
+          "name": "NEW WHISKY GLAZED BBQ PORK RIBS",
+          "description": "Slow-cooked pork ribs glazed in a rich whisky-infused barbecue sauce, finished to a tender fall-off-the-bone texture. Served with creamy mashed potatoes and crisp, refreshing coleslaw.",
+          "price": "P895",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "sides",
+      "name": "SIDES",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "onion-rings-sides",
+          "name": "ONION RINGS",
+          "description": "Crispy fried rings served with a side of savory Harissa sauce.",
+          "price": "P285",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "jalapeno-poppers-sides",
+          "name": "JALAPENO POPPERS",
+          "description": "Spicy and Cheesy orbs of goodness served with a side of savory Harissa sauce.",
+          "price": "P315",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "mashed-potato-sides",
+          "name": "MASHED POTATO",
+          "description": "Creamy, buttery potatoes whipped to silky perfection, and seasoned just right.",
+          "price": "P80",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "fries-sides",
+          "name": "FRIES",
+          "description": "Crispy & golden, seasoned just right and served hot for the perfect classic side.",
+          "price": "P150",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "potato-salad-sides",
+          "name": "POTATO SALAD",
+          "description": "Saddle up for a hearty scoop of creamy potatoes tossed with crunchy veggies, and a tangy vinaigrette dressing.",
+          "price": "P120",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "pandesal-sides",
+          "name": "PANDESAL",
+          "description": "Two rolls of our house-made recipe, freshly baked daily with malunggay.",
+          "price": "P15",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "hashbrown-sides",
+          "name": "HASHBROWN",
+          "description": "Made fresh, crispy, and golden.",
+          "price": "P50",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "cookies",
+      "name": "COOKIES",
+      "image": "/images/placeholder.svg",
+      "note": "Freshly baked & made in-house",
+      "items": [
+        {
+          "id": "red-velvet-cookies",
+          "name": "♥ RED VELVET",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "chocolate-chip-cookies",
+          "name": "CHOCOLATE CHIP",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "white-chocolate-chip-cookies",
+          "name": "WHITE CHOCOLATE CHIP",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "peanut-butter-cookies",
+          "name": "PEANUT BUTTER",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "oatmeal-cookies",
+          "name": "OATMEAL",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "biscoff-cookies",
+          "name": "★ BISCOFF",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "lemon-shortbread-cookies",
+          "name": "LEMON SHORTBREAD",
+          "description": "",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "gelato",
+      "name": "GELATO",
+      "image": "/images/placeholder.svg",
+      "note": "One Scoop for P80 Two Scoops for P150",
+      "items": [
+        {
+          "id": "cookies-cream-gelato",
+          "name": "COOKIES & CREAM",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "caramel-gelato",
+          "name": "CARAMEL",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "coffee-gelato",
+          "name": "COFFEE",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "banana-gelato",
+          "name": "★ BANANA",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "mango-gelato",
+          "name": "MANGO",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "strawberry-gelato",
+          "name": "STRAWBERRY",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "new-matcha-gelato",
+          "name": "New MATCHA",
+          "description": "",
+          "price": "P80/P150",
+          "priceCaption": "1/2 scoops",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "baked",
+      "name": "BAKED GOODS",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "banana-muffin-baked",
+          "name": "★BANANA MUFFIN",
+          "description": "Light, sweet and baked fresh, comforting in every bite. ~ With Chocolate Chips for P75~",
+          "price": "P60",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "cinnamon-roll-baked",
+          "name": "CINNAMON ROLL",
+          "description": "~ Almond P169~ Chocolate P179 ~",
+          "price": "P150",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "coffee",
+      "name": "COFFEE",
+      "image": "/images/placeholder.svg",
+      "note": "Crafted with care: Our special blend features premium coffee beans. Enjoy Hot or Iced along with Whole Milk. Sub out for Almond Milk, Oatmilk, or Soy Milk (+P50)",
+      "items": [
+        {
+          "id": "espresso-coffee",
+          "name": "ESPRESSO",
+          "description": "Full-bodied coffee with a deep aroma. ~ Available as a Single, or Double shot ~",
+          "price": "P40/P80",
+          "priceCaption": "Single/Double",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "cappuccino-coffee",
+          "name": "CAPPUCCINO",
+          "description": "Made with rich espresso and a thick, creamy layer of frothy milk.",
+          "price": "P155/P180",
+          "priceCaption": "12oz/16oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "americano-coffee",
+          "name": "AMERICANO",
+          "description": "A bold, steady brew. Clean, smooth, and built on rich espresso.",
+          "price": "P140/P160",
+          "priceCaption": "12oz/16oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "caf-latte-coffee",
+          "name": "CAFÉ LATTE",
+          "description": "Smooth, creamy espresso balanced with steamed milk for a comforting classic.",
+          "price": "P150/P160",
+          "priceCaption": "12oz/16oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "caramel-latte-coffee",
+          "name": "CARAMEL LATTE",
+          "description": "Rich espresso meets creamy steamed milk, crowned with golden caramel drizzle.",
+          "price": "P180/P195",
+          "priceCaption": "12oz/16oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "mocha-latte-coffee",
+          "name": "MOCHA LATTE",
+          "description": "Bold espresso, rich chocolate.",
+          "price": "P175/P190",
+          "priceCaption": "12oz/16oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "spanish-latte-coffee",
+          "name": "★ SPANISH LATTE",
+          "description": "Espresso, steamed milk, and a touch of sweetened condensed milk.",
+          "price": "P180/P195",
+          "priceCaption": "12oz/16oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "smoothies",
+      "name": "SMOOTHIES",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "watermelon-smoothie-smoothies",
+          "name": "WATERMELON SMOOTHIE",
+          "description": "",
+          "price": "P140",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "banana-smoothie-smoothies",
+          "name": "BANANA SMOOTHIE",
+          "description": "",
+          "price": "P140",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "beverages",
+      "name": "BEVERAGES",
+      "image": "/images/placeholder.svg",
+      "note": "Teas can be served Hot for calming comfort, or Iced for a crisp refreshing lift.",
+      "items": [
+        {
+          "id": "blue-ternate-tea-beverages",
+          "name": "BLUE TERNATE TEA",
+          "description": "Organic, locally grown, and with a beautiful natural blue hue. ~ Served Hot or Iced, Lightly Sweetened, & a touch of Calamansi ~",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "lemongrass-tea-beverages",
+          "name": "LEMONGRASS TEA",
+          "description": "Organic, locally grown lemongrass steeped to release its bright, citrusy aroma. ~ Served Hot or Iced, Lightly Sweetened, & a touch of Calamansi ~",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "selected-hot-tea-beverages",
+          "name": "SELECTED HOT TEA",
+          "description": "",
+          "price": "P90",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "canned-drinks-beverages",
+          "name": "CANNED DRINKS",
+          "description": "Coke, Zero, Royal, Sprite, Cali, Schweppes, Pineapple Juice",
+          "price": "P95",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "davao-tablea-beverages",
+          "name": "DAVAO TABLEA",
+          "description": "Rich, pure cacao tablets from Davao slowly melted into a bold, velvety hot chocolate.",
+          "price": "P130",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "beer-beverages",
+          "name": "BEER",
+          "description": "San Mig Pale Pilsen, Lite, and Red Horse",
+          "price": "P120",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "steaks",
+      "name": "STEAKS",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "t-bone-steak-steaks",
+          "name": "T-BONE STEAK",
+          "description": "Hearty & grilled to perfection, a buttered steak served with home-fried potatoes, glazed carrots, cherry tomatoes, and a bright chimichurri sauce on the side.",
+          "price": "P8/OZ",
+          "priceCaption": "per oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "usda-prime-ribeye-steak-steaks",
+          "name": "USDA PRIME RIBEYE STEAK",
+          "description": "Hearty & grilled to perfection with creamy mashed potatoes, sautéed beans and carrots, finished with a rich peppercorn sauce and cherry tomatoes.",
+          "price": "P10/OZ",
+          "priceCaption": "per oz",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "salmon",
+      "name": "SALMON",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "new-salmon-with-tomato-salsa-salmon",
+          "name": "New SALMON WITH TOMATO SALSA",
+          "description": "A tender, pan-seared salmon fillet topped with a fresh tomato salsa, served alongside fragrant cilantro rice and hearty beans for a bright, balanced, and satisfying plate.",
+          "price": "P1095",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "makan",
+      "name": "★ MAKAN ★",
+      "image": "/images/placeholder.svg",
+      "note": "",
+      "items": [
+        {
+          "id": "corned-beef-hash-makan",
+          "name": "★ CORNED BEEF HASH",
+          "description": "Savory Corned Beef with glazed onions, perfectly cooked egg how you want it, fresh malunggay pandesal, and your choice of rice or crispy hash browns.",
+          "price": "P325",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "pinakbet-makan",
+          "name": "PINAKBET",
+          "description": "Fresh mixed vegetables sautéed and gently simmered in a savory bagoong-based sauce, delivering a bold, earthy flavor.",
+          "price": "P250",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "laing-makan",
+          "name": "LAING",
+          "description": "Tender taro leaves slow-simmered in rich coconut milk with chilies, shrimp paste, and aromatics, creating a deeply savory, creamy, and gently spicy.",
+          "price": "P250",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "poqui-poqui-makan",
+          "name": "POQUI POQUI",
+          "description": "A smoky Ilocano classic of fire-roasted eggplant, sautéed with tomatoes, onions, and eggs, softened into a creamy, savory medley bursting with rustic flavor.",
+          "price": "P450",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "native-tinola-manok-makan",
+          "name": "NATIVE TINOLA MANOK",
+          "description": "Native chicken gently simmered in a clear, aromatic ginger broth with green papaya and malunggay leaves, delivering clean, comforting flavors rooted in Filipino tradition.",
+          "price": "P470",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "fried-chicken-platter-makan",
+          "name": "FRIED CHICKEN PLATTER",
+          "description": "Five pieces of golden, crispy fried chicken, juicy on the inside and perfectly seasoned.",
+          "price": "P650",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "turon-to-makan",
+          "name": "TURON-TO",
+          "description": "Four handcrafted Filipino turon, lightly crisped and drizzled with chocolate sauce, paired with two scoops of gelato of your choice for a rich and satisfying dessert.",
+          "price": "P235",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "beef-caldereta-makan",
+          "name": "✩ BEEF CALDERETA",
+          "description": "A classic Filipino beef stew made with tender beef slow-cooked in a rich tomato-based sauce with potatoes, carrots, and bell pepper, rich in savory flavor.",
+          "price": "P900",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "bagnet-makan",
+          "name": "BAGNET",
+          "description": "A beloved Ilocano specialty of pork belly boiled until tender, then deep-fried to golden perfection for an ultra-crispy crackling skin and juicy, flavorful meat inside.",
+          "price": "P720",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        },
+        {
+          "id": "crispy-pata-makan",
+          "name": "CRISPY PATA",
+          "description": "Pork knuckle softened into tender perfection, then deep-fried to achieve a crisp, golden skin. Served with a classic soy calamansi dipping sauce accented with garlic and chili.",
+          "price": "P999",
+          "priceCaption": "",
+          "image": "/images/placeholder.svg",
+          "available": true
+        }
+      ]
+    }
+  ]
+}

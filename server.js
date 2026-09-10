@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS admin_users(username TEXT PRIMARY KEY,password_hash T
 CREATE TABLE IF NOT EXISTS sessions(sid TEXT PRIMARY KEY, sess TEXT NOT NULL, expired INTEGER NOT NULL);
 `);
 
-const seed=JSON.parse(fs.readFileSync(path.join(DATA_DIR,"menu.json"),"utf8"));
+const seed=JSON.parse(fs.readFileSync(path.join(__dirname,"menu.json"),"utf8"));
 const catCount=db.prepare("SELECT COUNT(*) c FROM categories").get().c;
 if(!catCount){
  const ic=db.transaction(()=>{
