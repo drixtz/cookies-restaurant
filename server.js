@@ -163,13 +163,19 @@ app.post("/api/logout",auth,(req,res)=>req.session.destroy(()=>res.json({ok:true
 app.get("/api/me",(req,res)=>res.json({admin:!!req.session.admin,username:req.session.admin?.username||null}));
 
 app.get("/api/orders",auth,(req,res)=>{
- const rows=db.prepare("SELECT * FROM orders ORDER BY id DESC LIMIT 300").all();
+ const rows=db.prepare("SELECT * FROM orders ORDER BY id DESC LIMIT 1000").all();
  res.json(rows.map(o=>({...o,items:JSON.parse(o.items_json)})));
 });
 app.patch("/api/orders/:id",auth,(req,res)=>{
  const status=clean(req.body.status,30);
  if(!["NEW","CONFIRMED","PREPARING","READY","COMPLETED","CANCELLED"].includes(status)) return res.status(400).json({error:"Invalid status"});
  db.prepare("UPDATE orders SET status=? WHERE id=?").run(status,Number(req.params.id));
+ res.json({ok:true});
+});
+app.delete("/api/orders/:id",auth,(req,res)=>{
+ const id=Number(req.params.id);
+ if(!id) return res.status(400).json({error:"Invalid order ID"});
+ db.prepare("DELETE FROM orders WHERE id=?").run(id);
  res.json({ok:true});
 });
 

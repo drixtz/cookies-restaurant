@@ -6,6 +6,24 @@
   <title>Cookie's · Manager Portal</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍪</text></svg>">
+  <style>
+    .date-filter-btn {
+      background: #0a0a0d;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .date-filter-btn.active, .date-filter-btn:hover {
+      background: var(--yellow);
+      color: #000;
+      border-color: var(--yellow);
+    }
+  </style>
 </head>
 <body class="admin-body">
 
@@ -87,26 +105,54 @@
   <main class="admin-container">
 
     <!-- TAB 1: LIVE ORDERS -->
+    <!-- TAB 1: LIVE ORDERS & DAILY SALES HISTORY -->
     <section id="tab-orders" class="admin-view active">
       <div class="orders-toolbar">
         <div>
-          <h2 style="font-size:24px; margin-bottom:4px;">Incoming Orders</h2>
-          <p style="color:var(--text-muted); font-size:13px;">Orders auto-refresh every 10 seconds</p>
+          <h2 style="font-size:24px; margin-bottom:4px;">Orders & Sales Dashboard</h2>
+          <p style="color:var(--text-muted); font-size:13px;">Auto-refreshes every 10 seconds</p>
         </div>
-        <div style="display:flex; align-items:center; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
           <button id="soundToggle" class="btn-icon" style="padding:8px 14px;">
             🔔 Sound: <span id="soundStatus">ON</span>
           </button>
           <div class="status-filters">
-            <button class="status-filter-btn active" data-filter="ALL">All</button>
+            <button class="status-filter-btn active" data-filter="ALL">All Status</button>
             <button class="status-filter-btn" data-filter="NEW">New</button>
             <button class="status-filter-btn" data-filter="CONFIRMED">Confirmed</button>
             <button class="status-filter-btn" data-filter="PREPARING">Preparing</button>
             <button class="status-filter-btn" data-filter="READY">Ready</button>
             <button class="status-filter-btn" data-filter="COMPLETED">Completed</button>
+            <button class="status-filter-btn" data-filter="CANCELLED">Cancelled</button>
           </div>
         </div>
       </div>
+
+      <!-- DATE SELECTOR & DAILY SALES SUMMARY BAR -->
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">📅 Date Filter:</span>
+          <button class="date-filter-btn active" id="dateBtnToday" onclick="setDateFilter('today')">Today</button>
+          <button class="date-filter-btn" id="dateBtnYesterday" onclick="setDateFilter('yesterday')">Yesterday</button>
+          <button class="date-filter-btn" id="dateBtnAll" onclick="setDateFilter('all')">All Past Orders</button>
+          <div style="display:flex; align-items:center; gap:6px; background:#0a0a0d; border:1px solid var(--border); padding:5px 10px; border-radius:8px;">
+            <span style="font-size:13px;">📆</span>
+            <input type="date" id="calendarDateInput" onchange="setDateFilter(this.value)" style="background:transparent; border:none; color:#ffffff; font-size:13px; outline:none; cursor:pointer;">
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Orders on <span id="summaryDateLabel">Today</span></div>
+            <div id="summaryOrderCount" style="font-size:16px; font-weight:800; color:var(--yellow);">0 orders</div>
+          </div>
+          <div style="border-left:1px solid var(--border); padding-left:20px;">
+            <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Total Revenue / Benta</div>
+            <div id="summaryTotalSales" style="font-size:22px; font-weight:900; color:#4ade80;">₱0.00</div>
+          </div>
+        </div>
+      </div>
+
       <div id="ordersGrid" class="orders-grid">
         <p style="color:var(--text-muted); padding:40px; text-align:center; grid-column:1/-1;">Loading orders…</p>
       </div>
@@ -884,7 +930,58 @@
       }
     }
 
-    // Order status filtering
+    // Order status and Date filtering
+    let selectedDate = "today"; // 'today', 'yesterday', 'all', or 'YYYY-MM-DD'
+
+    function toIsoDate(d) {
+      if (!d) return "";
+      const dt = new Date(d);
+      const year = dt.getFullYear();
+      const month = String(dt.getMonth() + 1).padStart(2, "0");
+      const day = String(dt.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function getTodayIso() {
+      return toIsoDate(new Date());
+    }
+
+    function getYesterdayIso() {
+      const dt = new Date();
+      dt.setDate(dt.getDate() - 1);
+      return toIsoDate(dt);
+    }
+
+    function formatDisplayDate(isoDate) {
+      if (!isoDate) return "";
+      const parts = isoDate.split("-");
+      if (parts.length !== 3) return isoDate;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/YYYY
+    }
+
+    function setDateFilter(val) {
+      selectedDate = val;
+
+      $("#dateBtnToday")?.classList.toggle("active", val === "today");
+      $("#dateBtnYesterday")?.classList.toggle("active", val === "yesterday");
+      $("#dateBtnAll")?.classList.toggle("active", val === "all");
+
+      const cal = $("#calendarDateInput");
+      if (cal) {
+        if (val !== "today" && val !== "yesterday" && val !== "all") {
+          cal.value = val;
+        } else if (val === "today") {
+          cal.value = getTodayIso();
+        } else if (val === "yesterday") {
+          cal.value = getYesterdayIso();
+        } else {
+          cal.value = "";
+        }
+      }
+
+      renderOrders();
+    }
+
     $$(".status-filter-btn").forEach(btn => {
       btn.onclick = () => {
         $$(".status-filter-btn").forEach(b => b.classList.remove("active"));
@@ -898,13 +995,49 @@
       const box = $("#ordersGrid");
       if (!box) return;
 
-      const filtered = currentFilter === "ALL" ? ordersList : ordersList.filter(o => o.status === currentFilter);
+      let targetDate = "";
+      let dateLabel = "";
+      if (selectedDate === "today") {
+        targetDate = getTodayIso();
+        dateLabel = `Today (${formatDisplayDate(targetDate)})`;
+      } else if (selectedDate === "yesterday") {
+        targetDate = getYesterdayIso();
+        dateLabel = `Yesterday (${formatDisplayDate(targetDate)})`;
+      } else if (selectedDate === "all") {
+        targetDate = "";
+        dateLabel = "All Dates";
+      } else {
+        targetDate = selectedDate;
+        dateLabel = formatDisplayDate(selectedDate);
+      }
+
+      // 1. Filter by date
+      const dateFiltered = targetDate
+        ? ordersList.filter(o => toIsoDate(o.created_at) === targetDate)
+        : ordersList;
+
+      // 2. Calculate daily revenue and order count
+      const validSalesOrders = dateFiltered.filter(o => o.status !== "CANCELLED");
+      const totalRevenue = validSalesOrders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+
+      const dateLabelEl = $("#summaryDateLabel");
+      if (dateLabelEl) dateLabelEl.textContent = dateLabel;
+      const countEl = $("#summaryOrderCount");
+      if (countEl) countEl.textContent = `${dateFiltered.length} orders`;
+      const salesEl = $("#summaryTotalSales");
+      if (salesEl) salesEl.textContent = money(totalRevenue);
+
+      // 3. Filter by status
+      const filtered = currentFilter === "ALL" 
+        ? dateFiltered 
+        : dateFiltered.filter(o => o.status === currentFilter);
 
       if (!filtered.length) {
         box.innerHTML = `
-          <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted);">
-            <div style="font-size:36px; margin-bottom:12px;">📋</div>
-            <p>No orders found under "${currentFilter}".</p>
+          <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted); background:var(--surface); border:1px dashed var(--border); border-radius:18px;">
+            <div style="font-size:36px; margin-bottom:12px;">📅</div>
+            <h3 style="color:#ffffff;">No orders for ${esc(dateLabel)}</h3>
+            <p style="font-size:13px; color:var(--text-dim); margin-top:4px;">Status: ${esc(currentFilter)} · Orders will show here automatically when placed.</p>
           </div>
         `;
         return;
@@ -915,9 +1048,14 @@
           <div class="order-top">
             <div>
               <span class="order-id">#${o.id}</span>
-              <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">${formatDate(o.created_at)}</span>
+              <span style="font-size:12px; color:var(--text-muted); margin-left:8px;">📅 ${formatDate(o.created_at)}</span>
             </div>
-            <span class="status-badge ${o.status}">${o.status}</span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span class="status-badge ${o.status}">${o.status}</span>
+              <button type="button" class="btn-icon danger" onclick="deleteOrder(${o.id})" title="Delete Order permanently" style="padding:4px 8px; font-size:11px; border-radius:6px;">
+                🗑️
+              </button>
+            </div>
           </div>
 
           <div>
@@ -961,6 +1099,21 @@
           </div>
         </div>
       `).join("");
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm(`Are you sure you want to permanently DELETE Order #${orderId}? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, { method: "DELETE" });
+        if (res.ok) {
+          toast(`Order #${orderId} permanently deleted.`);
+          await loadOrders();
+        } else {
+          alert("Failed to delete order");
+        }
+      } catch (e) {
+        alert("Network error");
+      }
     }
 
     async function updateOrderStatus(orderId, newStatus) {
@@ -1187,7 +1340,13 @@
 
     function formatDate(d) {
       try {
-        return new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (!d) return "";
+        const dt = new Date(d);
+        const day = String(dt.getDate()).padStart(2, "0");
+        const month = String(dt.getMonth() + 1).padStart(2, "0");
+        const year = dt.getFullYear();
+        const time = dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return `${day}/${month}/${year}, ${time}`;
       } catch (e) {
         return "";
       }
